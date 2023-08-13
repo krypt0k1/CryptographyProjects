@@ -14,7 +14,9 @@ Non-repudiation, closely linked to authentication, prevents individuals from den
 The knowledge of cryptography is a linchpin of ineffective cybersecurity strategies. It forms an essential arsenal in the fight against an array of cyber threats that continuously exploit vulnerabilities in our digitally-dependent lives. A profound understanding of cryptographic principles empowers cybersecurity professionals to create robust defenses, secure communication channels, and establish digital trust. As our world becomes increasingly digitized and interconnected, the role of cryptography remains paramount in upholding the confidentiality, integrity, and authenticity of our digital transactions and interactions.
 
 
-Integrations with a Hardware Security Module:
+
+
+# Integrations with a Hardware Security Module:
 
 
 1. Active Directory Certificate Services and OCSP
