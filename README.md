@@ -16,10 +16,30 @@ The knowledge of cryptography is a linchpin of ineffective cybersecurity strateg
 
 Integrations with a Hardware Security Module:
 
+
 1. Active Directory Certificate Services and OCSP
 2. Active Directory Federation Services 
 3. Microsft Internet Information Services (IIS) 
 4. HTTP Apache Server & PKCS #11 Integration
-   
+
+Application Interface (API)
+
+
+Code Signer
+
+
+File Integrity Checker
+
+
+Implementing a VPN
+
+
+Password Manager
+
+
+
+
+
+
 
 
