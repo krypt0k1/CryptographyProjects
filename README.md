@@ -21,7 +21,7 @@ Key features of Active Directory include:
 
     6. Security: AD offers robust security features, including Kerberos authentication, secure LDAP, and integration with Public Key Infrastructure (PKI) for digital signatures and encryption.
 
-# Certificate Services:
+Certificate Services:
 
 Certificate Services, part of Microsoft's Windows Server operating system, is a component that allows organizations to issue and manage digital certificates within their network. Digital certificates play a crucial role in establishing secure communication and verifying the identity of users, devices, and services in a networked environment.
 
