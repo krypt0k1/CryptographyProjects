@@ -94,6 +94,7 @@ Ensure you have working module with a loaded Security World prior to running the
    - ![image](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/d4154fab-5098-4800-8a30-d7dfdf1e6002)
   
 * Select option 2 ' Add Roles and Features"
+* Install the Certficate Authority Services.
 * Install and configure AD CS with the following settings:
   
       a. In the Set Up Private Key window, select Use existing certificate and private
