@@ -67,4 +67,42 @@ The nShield Edge device can be integrated into a wide range of systems, includin
 - All hosts must have the nCipher CNG and CSP wizards installed. The wizards come pre-installed by default with a installation of Security World Client Software.
 - All hosts must have the same Security World (environment for HSM keys).
 
+Procedure
+--------------------
+
+1. Install Security World Software (contact Entrust Support for a download link at nshield.support@entrust.com, requires an active contract with their HSM's)
+
+2. Initalize your Security World Domain.
+    - For the nShield Edge use the front buttons to place the module on Initialization Mode (use the Mode button to select the mode and the Clear button to save your option) 
+
+3. Register the CNG and CSP wizards on each host.
+
+   
+![image](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/c11ddbcc-bda0-41e8-8ead-16563059b059)
+
+
+Note:
+Ensure you have working module with a loaded Security World prior to running the CSP and CNG wizards.
+ Resource on how to load a Security World on a nShield Module (https://nshielddocs.entrust.com)
+   nShield Edge User Guide(https://nshielddocs.entrust.com/1/docs/edge-ug/13.3/User_Guide_nShield_Edge_13.3_Windows.pdf)
+    - Section 7.1.4. Creating a Security World using new-world
+
+4. Choose the type of protection you are going to use (Softcard, Module or Operator Card Set protection); for the sake of simplicity we will keep cards protected by the module.
+5. Finish the wizard installations.
+
+6. Use Server Manager to install the AD CS Role.
+   - ![image](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/d4154fab-5098-4800-8a30-d7dfdf1e6002)
+  
+* Select option 2 ' Add Roles and Features"
+* Install and configure AD CS with the following settings:
+  
+      a. In the Set Up Private Key window, select Use existing certificate and private
+          key.
+       b. In the existing Certificate window, the imported certificate is shown. Select the
+          certificate, then select Allow administrator interaction when the private key is
+          accessed by the CA. Select Next.
+      c. In the Certificate Database window, select Next.
+      d. In the Confirmation window, select Configure.
+      f. When the CA installation is complete, select Close in the Results window.
+
 
