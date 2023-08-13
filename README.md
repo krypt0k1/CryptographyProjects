@@ -24,19 +24,19 @@ The knowledge of cryptography is a linchpin of ineffective cybersecurity strateg
 3. Microsft Internet Information Services (IIS) 
 4. HTTP Apache Server & PKCS #11 Integration
 
-Application Interface (API)
+# Application Interface (API)
 
 
-Code Signer
+# Code Signer
 
 
-File Integrity Checker
+# File Integrity Checker
 
 
-Implementing a VPN
+# Implementing a VPN
 
 
-Password Manager
+# Password Manager
 
 
 
