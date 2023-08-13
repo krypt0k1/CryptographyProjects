@@ -48,7 +48,8 @@ The plan is to deploy a Two-Tier Hierarchy where we have a total of three host.
     - One host will serve as Standalone Online Sub-CA #1
     - One host will serve as Standalone Online Sub-CA #2
 
-    ![image](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/9bcae0e6-e89e-4fda-975d-3a236931919b)
+
+![image](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/69950c57-0b35-4731-8896-96507124b56a)
 
 
 This AD CS deployment will utilize a Hardware Security Module to protect the private key of the Root CA and subsiquent Sub-CA using module protection. 
@@ -56,4 +57,14 @@ This AD CS deployment will utilize a Hardware Security Module to protect the pri
 A nShield Edge F3 Hardware Security Module will be used as part of this lab. The Thales nShield Edge device (owned by Entrust/N is a hardware security module (HSM) designed to provide robust and tamper-resistant cryptographic services for sensitive data and critical applications. HSMs are specialized devices that safeguard cryptographic keys and perform cryptographic operations, ensuring the confidentiality, integrity, and authenticity of digital communications and transactions. 
 
 The nShield Edge device can be integrated into a wide range of systems, including cloud environments, virtualized infrastructure, and traditional data centers. Its ease of management and integration, combined with its ability to offload resource-intensive cryptographic tasks, contribute to improved performance and reduced operational risks.
- 
+
+
+ Prequistes
+ ----------------
+- 3 or more hosts with Windows Server OS (2012, 2016, 2019, 2022 supported)
+- 1 Host (Offline Root CA), 1 Host (Online Sub-CA), 1 Host (Online Sub-CA), 1 Host (Domain Controller). 
+- All hosts must have Security World Software installed (propietarty Entrust hardserver software).
+- All hosts must have the nCipher CNG and CSP wizards installed. The wizards come pre-installed by default with a installation of Security World Client Software.
+- All hosts must have the same Security World (environment for HSM keys).
+
+
