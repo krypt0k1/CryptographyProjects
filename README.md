@@ -44,9 +44,10 @@ Key aspects of Certificate Services include:
 # Scope
 
 The plan is to deploy a Two-Tier Hierarchy where we have a total of three host.
-    - One will serve as an Root-CA. To prevent compromise of the Root-CA will be offline and online online when required by the two Sub-CA's. 
-    - One host will serve as Standalone Online Sub-CA #1
-    - One host will serve as Standalone Online Sub-CA #2
+
+- One will serve as an Root-CA. To prevent compromise of the Root-CA will be offline and online online when required by the two Sub-CA's. 
+- One host will serve as Standalone Online Sub-CA #1
+- One host will serve as Standalone Online Sub-CA #2
 
 
 ![image](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/69950c57-0b35-4731-8896-96507124b56a)
