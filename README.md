@@ -22,7 +22,7 @@ The knowledge of cryptography is a linchpin of ineffective cybersecurity strateg
 
 1. Active Directory Certificate Services and OCSP
 2. Active Directory Federation Services 
-3. Microsft Internet Information Services (IIS) 
+3. Microsoft Internet Information Services (IIS) 
 4. HTTP Apache Server & PKCS #11 Integration
 
 # Application Interface (API)
