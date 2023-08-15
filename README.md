@@ -43,9 +43,9 @@ Key aspects of Certificate Services include:
 
 # Scope
 
-The plan is to deploy a Two-Tier Hierarchy where we have a total of three host.
+The plan is to deploy a Two-Tier Hierarchy where we have a total of three hosts.
 
-- One will serve as an Root-CA. To prevent compromise of the Root-CA will be offline and online online when required by the two Sub-CA's. 
+- One will serve as a Root-CA. To prevent compromise, the Root-CA will be offline and online when required by the two Sub-CA. 
 - One host will serve as Standalone Online Sub-CA #1
 - One host will serve as Standalone Online Sub-CA #2
 
@@ -53,19 +53,19 @@ The plan is to deploy a Two-Tier Hierarchy where we have a total of three host.
 ![image](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/69950c57-0b35-4731-8896-96507124b56a)
 
 
-This AD CS deployment will utilize a Hardware Security Module to protect the private key of the Root CA and subsiquent Sub-CA using module protection. 
+This AD CS deployment will utilize a Hardware Security Module to protect the private key of the Root CA and subsequent Sub-CA using module protection. 
 
-A nShield Edge F3 Hardware Security Module will be used as part of this lab. The Thales nShield Edge device (owned by Entrust/N is a hardware security module (HSM) designed to provide robust and tamper-resistant cryptographic services for sensitive data and critical applications. HSMs are specialized devices that safeguard cryptographic keys and perform cryptographic operations, ensuring the confidentiality, integrity, and authenticity of digital communications and transactions. 
+A nShield 5 Security Module will be used as part of this lab. The Entrust nShield 5 t/N is a hardware security module (HSM) designed to provide robust and tamper-resistant cryptographic services for sensitive data and critical applications. HSMs are specialized devices that safeguard cryptographic keys and perform cryptographic operations, ensuring the confidentiality, integrity, and authenticity of digital communications and transactions. 
 
-The nShield Edge device can be integrated into a wide range of systems, including cloud environments, virtualized infrastructure, and traditional data centers. Its ease of management and integration, combined with its ability to offload resource-intensive cryptographic tasks, contribute to improved performance and reduced operational risks.
+The nShield Hardware Security Module device can be integrated into a wide range of systems, including cloud environments, virtualized infrastructure, and traditional data centers. Its ease of management and integration, combined with its ability to offload resource-intensive cryptographic tasks, contribute to improved performance and reduced operational risks.
 
 
- Prequistes
+ Prerequisites
  ----------------
 - 3 or more hosts with Windows Server OS (2012, 2016, 2019, 2022 supported)
 - 1 Host (Offline Root CA), 1 Host (Online Sub-CA), 1 Host (Online Sub-CA), 1 Host (Domain Controller). 
-- All hosts must have Security World Software installed (propietarty Entrust hardserver software).
-- All hosts must have the nCipher CNG and CSP wizards installed. The wizards come pre-installed by default with a installation of Security World Client Software.
+- All hosts must have Security World Software installed (proprietary Entrust hardserver software).
+- All hosts must have the nCipher CNG and CSP wizards installed. The wizards come pre-installed by default with an installation of Security World Client Software.
 - All hosts must have the same Security World (environment for HSM keys).
 
 Procedure
@@ -73,8 +73,8 @@ Procedure
 
 1. Install Security World Software (contact Entrust Support for a download link at nshield.support@entrust.com, requires an active contract with their HSM's)
 
-2. Initalize your Security World Domain.
-    - For the nShield Edge use the front buttons to place the module on Initialization Mode (use the Mode button to select the mode and the Clear button to save your option) 
+2. Initialize your Security World Domain.
+   
 
 3. Register the CNG and CSP wizards on each host.
 
@@ -83,20 +83,20 @@ Procedure
 
 
 Note:
-Ensure you have working module with a loaded Security World prior to running the CSP and CNG wizards.
+Ensure you have a working module with a loaded Security World prior to running the CSP and CNG wizards.
  Resource on how to load a Security World on a nShield Module (https://nshielddocs.entrust.com)
    nShield Edge User Guide(https://nshielddocs.entrust.com/1/docs/edge-ug/13.3/User_Guide_nShield_Edge_13.3_Windows.pdf)
     - Section 7.1.4. Creating a Security World using new-world
 
-4. Choose the type of protection you are going to use (Softcard, Module or Operator Card Set protection); for the sake of simplicity we will keep cards protected by the module.
+4. Choose the type of protection you are going to use (Softcard, Module, or Operator Card Set protection); for the sake of simplicity, we will keep cards protected by the module.
 5. Finish the wizard installations.
 
   
 6. Use Server Manager to install the AD CS Role.
    - ![image](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/d4154fab-5098-4800-8a30-d7dfdf1e6002)
   
-* Select option 2 ' Add Roles and Features"
-* Install the Active Directory Certficate Authority Services.
+* Select option 2 ' Add Roles and Features."
+* Install the Active Directory Certificate Authority Services.
 * Configure AD CS with the following settings:
   
       a. In the Set Up Private Key window, select Use existing certificate and private
