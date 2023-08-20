@@ -274,7 +274,7 @@ loadshared accelerator
 
 Ok, so we get back our session, token name, and our PKCS #11 logs confirm that the session happened.
 
-
+'''
 2023-08-17 11:59:38 [3355128]: pkcs11: 00000000 >>   C_GetFunctionList
 2023-08-17 11:59:38 [3355128]: pkcs11: 00000000 >    ppFunctionList 0x7fb085cff298
 2023-08-17 11:59:38 [3355128]: pkcs11: 00000000 >>   C_Initialize
@@ -625,6 +625,7 @@ Ok, so we get back our session, token name, and our PKCS #11 logs confirm that t
 2023-08-17 11:59:38 [3355128]: pkcs11: 00000000 D    slot_destroy_hashmaps
 2023-08-17 11:59:38 [3355128]: pkcs11: 00000000 D    slot_destroy_hashmaps done
 2023-08-17 11:59:38 [3355128]: pkcs11: 00000000 <    rv 0x00000000
+'''
 
 
 
