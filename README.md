@@ -60,10 +60,10 @@ Create an application with a GUI that communicates with the HSM via the Entrust 
 
 Prereqs
 
-     Have the latest version of Python (python3)
-     Download the pkcs11 module
-        Run pip install python and pip install python-pkcs11
-    Enable the following variables on your /opt/nfast/cknfastrc file
+1. Have the latest version of Python (python3)
+2. Download the pkcs11 module
+3. Run pip install python and pip install python-pkcs11
+4. Enable the following variables on your /opt/nfast/cknfastrc file
         CKNFAST_FAKE_ACCELERATOR_LOGIN = 1
         CKNFAST_LOADSHARING = 1
         CKNFAST_DEBUG=10
@@ -76,53 +76,51 @@ The PKCS #11 (Public-Key Cryptography Standards #11) API, also known as Cryptoki
 
 Key goals and features of the PKCS #11 API include:
 
-    Abstraction of Cryptographic Tokens: The API abstracts the specific details of various cryptographic tokens, allowing applications to interact with them using a consistent interface regardless of the token's physical or logical characteristics.
+1. Abstraction of Cryptographic Tokens: The API abstracts the specific details of various cryptographic tokens, allowing applications to interact with them using a consistent interface regardless of the token's physical or logical characteristics.
 
-    Security: PKCS #11 aims to provide a secure means of utilizing cryptographic functions by separating the application from the low-level cryptographic operations. It allows applications to offload cryptographic processing to dedicated hardware, which can be more resistant to certain types of attacks.
+2. Security: PKCS #11 aims to provide a secure means of utilizing cryptographic functions by separating the application from the low-level cryptographic operations. It allows applications to offload cryptographic processing to dedicated hardware, which can be more resistant to certain types of attacks.
 
-    Interoperability: PKCS #11 promotes interoperability by providing a standard API that can be implemented by various vendors, ensuring that applications developed to the PKCS #11 standard can work with different hardware tokens without significant modifications.
+3. Interoperability: PKCS #11 promotes interoperability by providing a standard API that can be implemented by various vendors, ensuring that applications developed to the PKCS #11 standard can work with different hardware tokens without significant modifications.
 
-    Functionality: The API covers a broad range of cryptographic functions, including encryption, decryption, digital signatures, key generation, key management, and more. This enables developers to build secure applications that leverage these functionalities.
+4. Functionality: The API covers a broad range of cryptographic functions, including encryption, decryption, digital signatures, key generation, key management, and more. This enables developers to build secure applications that leverage these functionalities.
 
-    Cryptographic Agility: PKCS #11 allows for the dynamic loading and management of cryptographic algorithms and mechanisms, which helps ensure that applications can adapt to new security requirements and advances in cryptography over time.
+5. Cryptographic Agility: PKCS #11 allows for the dynamic loading and management of cryptographic algorithms and mechanisms, which helps ensure that applications can adapt to new security requirements and advances in cryptography over time.
 
-    Hardware Protection: Using PKCS #11 to interact with hardware tokens like HSMs, sensitive cryptographic material can be securely stored and managed within the hardware, reducing the risk of exposure and unauthorized access.
+6. Hardware Protection: Using PKCS #11 to interact with hardware tokens like HSMs, sensitive cryptographic material can be securely stored and managed within the hardware, reducing the risk of exposure and unauthorized access.
 
-    Vendor Independence: Applications that use the PKCS #11 API are not tied to a specific hardware vendor, allowing developers to choose the most suitable hardware token for their needs without being locked into a particular vendor's solution.
+7. Vendor Independence: Applications that use the PKCS #11 API are not tied to a specific hardware vendor, allowing developers to choose the most suitable hardware token for their needs without being locked into a particular vendor's solution.
 
 
-Process
+# Process
 
 Using the PKCS #11 API involves several steps that an application follows to interact with cryptographic tokens (such as hardware security modules or smart cards) and perform various cryptographic operations.
 
 Here's a general overview of the typical process:
 
-    Initialization:
-        Load the PKCS #11 library provided by the token vendor.
-        Initialize the library by calling the C_Initialize function. This sets up the PKCS #11 environment and prepares the application for interacting with cryptographic tokens.
-
-    Token and Slot Enumeration:
+1.  Initialization
+2.  Load the PKCS #11 library provided by the token vendor.
+3.  Initialize the library by calling the C_Initialize function. (This sets up the PKCS #11 environment and prepares the application for interacting with cryptographic tokens.
+4.  Token and Slot Enumeration:
         Enumerate available slots (physical or logical slots where tokens are inserted).
         Retrieve information about the tokens present in the slots using functions like C_GetSlotList, C_GetTokenInfo, etc.
-
-    Token Management:
+5.  Token Management:
         Perform token-specific actions like logging in, logging out, changing PINs, etc.
         Manage cryptographic objects (keys, certificates) stored on the token using functions like C_CreateObject, C_DestroyObject, etc.
 
-    Key Generation:
+6.  Key Generation:
         Generate cryptographic keys using functions like C_GenerateKeyPair, C_GenerateKey, etc.
 
-    Cryptographic Operations:
+7.  Cryptographic Operations:
         Perform cryptographic operations like encryption, decryption, signing, and verification using the keys stored on the token.
         Use functions such as C_Encrypt, C_Decrypt, C_Sign, C_Verify, etc.
 
-    Object Management:
+8.  Object Management:
         Manage cryptographic objects on the token, including creating, deleting, and retrieving objects using functions like C_CreateObject, C_DestroyObject, C_FindObjects, etc.
 
-    Token Information:
+9.    Token Information:
         Retrieve information about the token, such as manufacturer details, model, serial number, supported mechanisms, etc., using functions like C_GetTokenInfo.
 
-    Finalization:
+10.    Finalization:
         Terminate the PKCS #11 library usage by calling the C_Finalize function. This releases any resources and cleans up the PKCS #11 environment.
 
 It's important to note that while these steps provide a general outline of the PKCS #11 process, the actual implementation details and function names may vary based on the specific PKCS #11 library and token vendor.
@@ -136,12 +134,12 @@ WORK IN PROGRESS
 
 Milestones:
 
-    Create GUI with functional buttons. ✔️
-    Create an organized UI for the application.
-    Tie buttons to call various functions of the Entrust PKCS #11 library.
-    Test if buttons can action the function call.
-    Debug ( OPENSC_DEBUG)
-    TBD
+1. Create GUI with functional buttons. ✔️
+2. Create an organized UI for the application.
+3. Tie buttons to call various functions of the Entrust PKCS #11 library.
+4. Test if buttons can action the function call.
+5. Debug ( OPENSC_DEBUG)
+7. TBD
 
 
 
@@ -171,26 +169,26 @@ def exit_program():
     if messagebox.askokcancel("Exit", "Do you want to exit?"):
         root.quit()
  
-# Create the main application window
+## Create the main application window
 root = tk.Tk()
 root.title("PKCS #11 Program")
  
-# Create a menu bar
+## Create a menu bar
 menu_bar = tk.Menu(root)
 root.config(menu=menu_bar)
  
  
-# Create a file menu
+## Create a file menu
 file_menu = tk.Menu(menu_bar, tearoff=0)
 file_menu.add_command(label="Exit", command=exit_program)
 menu_bar.add_cascade(label="File", menu=file_menu)
  
-# Create a help menu
+## Create a help menu
 help_menu = tk.Menu(menu_bar, tearoff=0)
 help_menu.add_command(label="About", command=show_about)
 menu_bar.add_cascade(label="Help", menu=help_menu)
  
-# Create an options menu
+## Create an options menu
 options_menu = tk.Menu(menu_bar, tearoff=0)
 options_menu.add_command(label="tbd", command=option1_action)
 options_menu.add_command(label="tbd", command=option2_action)
@@ -200,7 +198,7 @@ menu_bar.add_cascade(label="Options", menu=options_menu)
 #Define PKCS #11 Functions
  
  
-# Create buttons
+## Create buttons
  
  
 def InitToken():
@@ -225,7 +223,7 @@ myButton.pack()
 myButton = Button(root, text="Generate Key", command=KeyGeneration)
 myButton.pack()
  
-# Run the application
+## Run the application
 root.mainloop()'''
 
 
@@ -241,30 +239,30 @@ from pkcs11 import *
  
  
  
-# Specify the correct environment variable that contains the path to the PKCS#11 library
+## Specify the correct environment variable that contains the path to the PKCS#11 library
 pkcs11_lib_path = '/opt/nfast/toolkits/pkcs11/libcknfast.so'
  
-# Load the PKCS#11 library from the specified path
+## Load the PKCS#11 library from the specified path
 lib = pkcs11.lib(pkcs11_lib_path)
  
-# Get a token object from the loaded library, specifying the token label ('loadshared accelerator' in this case)
+## Get a token object from the loaded library, specifying the token label ('loadshared accelerator' in this case)
 token = lib.get_token(token_label='loadshared accelerator')
  
-# FYI token_label will need one of the slot names from your /opt/nfast/cklist output.
-# Given that the CKNFAST_LOADSHARING = 1 variable puts all slots tokens into a singular slot, we're able to see them all pop at once.
+## FYI token_label will need one of the slot names from your /opt/nfast/cklist output.
+## Given that the CKNFAST_LOADSHARING = 1 variable puts all slots tokens into a singular slot, we're able to see them all pop at once.
  
-# Open a session with the token, indicating that it's a read-write session and providing the user PIN ('1234' in this case) for authentication
+## Open a session with the token, indicating that it's a read-write session and providing the user PIN ('1234' in this case) for authentication
  
-# To login as Security Officer (SO) change user_pin to so_pin
+## To login as Security Officer (SO) change user_pin to so_pin
  
-# example:
+## example:
 #with token.open(rw=True, so_pin= 'asg123;') as session:
  
-# Login as user
+## Login as user
 with token.open(rw=True, user_pin='1234') as session:
      print(session)
  
-# Gets the slots names
+## Gets the slots names
  
 for slot in lib.get_slots():
     token = slot.get_token()
