@@ -23,34 +23,19 @@ The knowledge of cryptography is a linchpin of ineffective cybersecurity strateg
 Scope
 
 
-1	
-
-Understand and comprehend nShield PKCS11 User Guide and CKNFASTRC variables.
-	✔️ 	✔️
-2	Review PKCS11 Token Interface Base Spec, Python PKCS11 Library, and Integration guide, 	✔️ 	✔️
-3	
-
-Define the capabilities and functions of the application:
-
+1. Understand and comprehend nShield PKCS11 User Guide and CKNFASTRC variables.✔️ 	
+2. Review PKCS11 Token Interface Base Spec, Python PKCS11 Library, and Integration guide.✔️ 
+3. Define the capabilities and functions of the application: ✔️ 
      Initialization
      Token and Slot Enumeration
      Token Management
-    Key Generation
+     Key Generation
      Cryptographic Operations
      Object Management
      Token Information
      Finalization
 
-	
-
-✔️
-	
-
-
-4	
-
-
-Create an application with a GUI that communicates with the HSM via the Entrust P11 Library.
+4. Create an application with a GUI that communicates with the HSM via the Entrust P11 Library.
 	
 
 
