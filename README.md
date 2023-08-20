@@ -151,7 +151,7 @@ from tkinter import *
 from pkcs11 import *
  
  
-# Define Menus
+## Define Menus
 def show_about():
     messagebox.showinfo("About", "Developed by Armando Montero Property of Entrust & nCipher Security")
     
@@ -226,7 +226,7 @@ myButton = Button(root, text="Generate Key", command=KeyGeneration)
 myButton.pack()
  
 # Run the application
-root.mainloop()
+root.mainloop()'''
 
 
 PKCS #11 Related Functions
