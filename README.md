@@ -37,17 +37,35 @@ Scope
 
 
 
-Prereqs
 
-1. Have the latest version of Python (python3)
-2. Download the pkcs11 module
-3. Run pip install python and pip install python-pkcs11
-4. Enable the following variables on your /opt/nfast/cknfastrc file
+Prerequisites
+
+Operating systems
+• Linux on x86_64
+• Windows on x86_64
+
+nShield Software
+• Security World 12.80 or later
+
+User permissions
+• A user permitted to connect to the local hardserver and read the Security
+
+World key management data (kmdata) files.
+
+Supported Python version
+• Python 3.8.5
+
+Python Modules 
+• Run pip install python and pip install python-pkcs11
+• Enable the following variables on your /opt/nfast/cknfastrc file
         CKNFAST_FAKE_ACCELERATOR_LOGIN = 1
         CKNFAST_LOADSHARING = 1
         CKNFAST_DEBUG=10
         CKNFAST_DEBUGFILE= /opt/nfast/
-            The directory for the debug file is arbitrary; place it where your heart feels like (heart) slightly smiling face.
+            The directory for the debug file is arbitrary; place it where your heart feels like <3.
+
+
+
 
 Introduction
 
@@ -55,19 +73,19 @@ The PKCS #11 (Public-Key Cryptography Standards #11) API, also known as Cryptoki
 
 Key goals and features of the PKCS #11 API include:
 
-1. Abstraction of Cryptographic Tokens: The API abstracts the specific details of various cryptographic tokens, allowing applications to interact with them using a consistent interface regardless of the token's physical or logical characteristics.
+• Abstraction of Cryptographic Tokens: The API abstracts the specific details of various cryptographic tokens, allowing applications to interact with them using a consistent interface regardless of the token's physical or logical characteristics.
 
-2. Security: PKCS #11 aims to provide a secure means of utilizing cryptographic functions by separating the application from the low-level cryptographic operations. It allows applications to offload cryptographic processing to dedicated hardware, which can be more resistant to certain types of attacks.
+• Security: PKCS #11 aims to provide a secure means of utilizing cryptographic functions by separating the application from the low-level cryptographic operations. It allows applications to offload cryptographic processing to dedicated hardware, which can be more resistant to certain types of attacks.
 
-3. Interoperability: PKCS #11 promotes interoperability by providing a standard API that can be implemented by various vendors, ensuring that applications developed to the PKCS #11 standard can work with different hardware tokens without significant modifications.
+• Interoperability: PKCS #11 promotes interoperability by providing a standard API that can be implemented by various vendors, ensuring that applications developed to the PKCS #11 standard can work with different hardware tokens without significant modifications.
 
-4. Functionality: The API covers a broad range of cryptographic functions, including encryption, decryption, digital signatures, key generation, key management, and more. This enables developers to build secure applications that leverage these functionalities.
+• Functionality: The API covers a broad range of cryptographic functions, including encryption, decryption, digital signatures, key generation, key management, and more. This enables developers to build secure applications that leverage these functionalities.
 
-5. Cryptographic Agility: PKCS #11 allows for the dynamic loading and management of cryptographic algorithms and mechanisms, which helps ensure that applications can adapt to new security requirements and advances in cryptography over time.
+• Cryptographic Agility: PKCS #11 allows for the dynamic loading and management of cryptographic algorithms and mechanisms, which helps ensure that applications can adapt to new security requirements and advances in cryptography over time.
 
-6. Hardware Protection: Using PKCS #11 to interact with hardware tokens like HSMs, sensitive cryptographic material can be securely stored and managed within the hardware, reducing the risk of exposure and unauthorized access.
+• Hardware Protection: Using PKCS #11 to interact with hardware tokens like HSMs, sensitive cryptographic material can be securely stored and managed within the hardware, reducing the risk of exposure and unauthorized access.
 
-7. Vendor Independence: Applications that use the PKCS #11 API are not tied to a specific hardware vendor, allowing developers to choose the most suitable hardware token for their needs without being locked into a particular vendor's solution.
+• Vendor Independence: Applications that use the PKCS #11 API are not tied to a specific hardware vendor, allowing developers to choose the most suitable hardware token for their needs without being locked into a particular vendor's solution.
 
 
 # Process
