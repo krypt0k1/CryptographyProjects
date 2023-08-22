@@ -806,9 +806,7 @@ Okay, I am able to see all my tokens
     PKCS11SoftcCard (softcard prot)
 
 
-So far so good grinning face with smiling eyes; now, let's make it show us the objects within the Token.
-Like
-Be the first to like this
+So far, so good :) 
 
 
 
