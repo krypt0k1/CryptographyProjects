@@ -45,24 +45,30 @@ Key aspects of Certificate Services include:
 
 The plan is to deploy a Two-Tier Hierarchy where we have a total of three hosts.
 
-- One will serve as a Root-CA. To prevent compromise, the Root-CA will be offline and online when required by the two Sub-CA. 
+- One will serve as a Root-CA. 
 - One host will serve as Standalone Online Sub-CA #1
 - One host will serve as Standalone Online Sub-CA #2
-
+  
+To prevent compromise, the Root-CA will be offline and only turned online when required by the two Sub-CA. 
 
 ![image](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/69950c57-0b35-4731-8896-96507124b56a)
 
 
 This AD CS deployment will utilize a Hardware Security Module to protect the private key of the Root CA and subsequent Sub-CA using module protection. 
 
-A nShield 5 Security Module will be used as part of this lab. The Entrust nShield 5 t/N is a hardware security module (HSM) designed to provide robust and tamper-resistant cryptographic services for sensitive data and critical applications. HSMs are specialized devices that safeguard cryptographic keys and perform cryptographic operations, ensuring the confidentiality, integrity, and authenticity of digital communications and transactions. 
+A nShield 5c Security Module will be used as part of this lab. The Entrust nShield 5c is a hardware security module (HSM) designed to provide robust and tamper-resistant cryptographic services for sensitive data and critical applications. HSMs are specialized devices that safeguard cryptographic keys and perform cryptographic operations, ensuring the confidentiality, integrity, and authenticity of digital communications and transactions. 
 
 The nShield Hardware Security Module device can be integrated into a wide range of systems, including cloud environments, virtualized infrastructure, and traditional data centers. Its ease of management and integration, combined with its ability to offload resource-intensive cryptographic tasks, contribute to improved performance and reduced operational risks.
 
 
  Prerequisites
  ----------------
-- 3 or more hosts with Windows Server OS (2012, 2016, 2019, 2022 supported)
+
+ To configure a two-tier hierarchy Windows Server Public Key Infrastructure (PKI), you will need the following:
+
+- Two Windows Server 2012 R2 or later servers
+- A domain controller
+- A web server (optional)
 - 1 Host (Offline Root CA), 1 Host (Online Sub-CA), 1 Host (Online Sub-CA), 1 Host (Domain Controller). 
 - All hosts must have Security World Software installed (proprietary Entrust hardserver software).
 - All hosts must have the nCipher CNG and CSP wizards installed. The wizards come pre-installed by default with an installation of Security World Client Software.
@@ -72,11 +78,9 @@ Procedure
 --------------------
 
 1. Install Security World Software (contact Entrust Support for a download link at nshield.support@entrust.com, requires an active contract with their HSM's)
-
-2. Initialize your Security World Domain.
-   
-
-3. Register the CNG and CSP wizards on each host.
+2. Load or create your Security World.
+3.   
+4. Register the CNG and CSP wizards on each host.
 
    
 ![image](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/c11ddbcc-bda0-41e8-8ead-16563059b059)
@@ -91,21 +95,81 @@ Ensure you have a working module with a loaded Security World prior to running t
 4. Choose the type of protection you are going to use (Softcard, Module, or Operator Card Set protection); for the sake of simplicity, we will keep cards protected by the module.
 5. Finish the wizard installations.
 
-  
-6. Use Server Manager to install the AD CS Role.
+
+# Installing and Configuring the Certificate Authorities #
+
    - ![image](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/d4154fab-5098-4800-8a30-d7dfdf1e6002)
   
-* Select option 2 ' Add Roles and Features."
-* Install the Active Directory Certificate Authority Services.
-* Configure AD CS with the following settings:
-  
-      a. In the Set Up Private Key window, select Use existing certificate and private
-          key.
-       b. In the existing Certificate window, the imported certificate is shown. Select the
-          certificate, then select Allow administrator interaction when the private key is
-          accessed by the CA. Select Next.
-      c. In the Certificate Database window, select Next.
-      d. In the Confirmation window, select Configure.
-      f. When the CA installation is complete, select Close in the Results window.
+Steps:
+
+    Install and configure the root CA.
+        On the first server, install the Active Directory Certificate Services (AD CS) role.
+        Start the AD CS console and click Configuration.
+        Select Install Root Certification Authority and click Next.
+        Select Enterprise Root CA and click Next.
+        Select Create a new private key and click Next.
+        Select SHA256 as the signature algorithm and click Next.
+        Enter a name for the root CA and click Next.
+        Select a location for the CA database and log files and click Next.
+        Review the summary of the configuration and click Install.
+
+    Configure the subordinate issuing CA.
+        On the second server, install the AD CS role.
+        Start the AD CS console and click Configuration.
+        Select Install Subordinate Certification Authority and click Next.
+        Select Subordinate CA and click Next.
+        Select Existing private key and click Next.
+        Browse to the location of the root CA certificate and click Open.
+        Enter a name for the subordinate issuing CA and click Next.
+        Select a location for the CA database and log files and click Next.
+        Review the summary of the configuration and click Install.
+
+    Configure the subordinate issuing CA to issue certificates.
+        On the subordinate issuing CA server, open the AD CS console.
+        Expand Certificate Templates.
+        Right-click the template for the type of certificate you want to issue and select Properties.
+        On the General tab, select This CA should issue certificates based on this template.
+        Click OK.
+
+    Publish the root CA certificate to the domain.
+        On the root CA server, open the AD CS console.
+        Expand Certificates.
+        Right-click the root CA certificate and select All Tasks > Publish.
+        Select Active Directory.
+        Click OK.
+
+    (Optional) Publish the subordinate issuing CA certificate to the web.
+        If you want to allow users to request certificates from the subordinate issuing CA over the web, you need to publish its certificate to a web server.
+        On the subordinate issuing CA server, copy the certificate to the web server.
+        On the web server, create a new virtual directory for the certificate.
+        Place the certificate in the virtual directory.
+        Configure the virtual directory to allow anonymous access.
+
+    Configure clients to trust the root CA certificate.
+        On each client computer, import the root CA certificate into the Trusted Root Certification Authorities store.
+        You can do this by manually importing the certificate or by deploying it using Group Policy.
+
+Once you have completed these steps, you will have a two-tier hierarchy PKI configured. You can then start issuing certificates to users and devices in your organization.
+
+Additional notes:
+
+    The root CA should be kept offline for security reasons.
+    The subordinate issuing CA can be kept online, but it should be highly secured.
+    You can have multiple subordinate issuing CAs subordinate to the root CA.
+    You can use Group Policy to deploy certificates to users and devices in your organization.
+
+Here are some additional recommendations for configuring a two-tier hierarchy PKI:
+
+    Use a strong encryption algorithm for the root CA private key, such as RSA-4096.
+    Use a hardware security module (HSM) to store the root CA private key.
+    Keep the root CA private key and certificate in a secure location.
+    Use a strong encryption algorithm for the subordinate issuing CA private key, such as RSA-2048.
+    Keep the subordinate issuing CA private key and certificate in a secure location.
+    Use a certificate revocation list (CRL) to publish revoked certificates.
+    Use a delta CRL to publish changes to the CRL more frequently.
+    Configure clients to check for CRL updates regularly.
+    Monitor the PKI infrastructure for security threats.
+
+
 
 
