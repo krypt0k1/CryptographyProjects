@@ -74,13 +74,12 @@ The nShield Hardware Security Module device can be integrated into a wide range 
 - All hosts must have the nCipher CNG and CSP wizards installed. The wizards come pre-installed by default with an installation of Security World Client Software.
 - All hosts must have the same Security World (environment for HSM keys).
 
-Procedure
+# Installing the Security World Software and nCipher CSP's #
 --------------------
 
 1. Install Security World Software (contact Entrust Support for a download link at nshield.support@entrust.com, requires an active contract with their HSM's)
 2. Load or create your Security World.
-3.   
-4. Register the CNG and CSP wizards on each host.
+3. Register the CNG and CSP wizards on each host.
 
    
 ![image](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/c11ddbcc-bda0-41e8-8ead-16563059b059)
@@ -106,11 +105,12 @@ Steps:
         On the first server, install the Active Directory Certificate Services (AD CS) role.
         Start the AD CS console and click Configuration.
         Select Install Root Certification Authority and click Next.
-        Select Enterprise Root CA and click Next.
+        Select standalone Root CA and click Next.
         Select Create a new private key and click Next.
+        Select #RSA nCipher Security Key 
         Select SHA256 as the signature algorithm and click Next.
         Enter a name for the root CA and click Next.
-        Select a location for the CA database and log files and click Next.
+        Select a location for the CA database and log files, and click Next.
         Review the summary of the configuration and click Install.
 
     Configure the subordinate issuing CA.
@@ -121,7 +121,7 @@ Steps:
         Select Existing private key and click Next.
         Browse to the location of the root CA certificate and click Open.
         Enter a name for the subordinate issuing CA and click Next.
-        Select a location for the CA database and log files and click Next.
+        Select a location for the CA database and log files, and click Next.
         Review the summary of the configuration and click Install.
 
     Configure the subordinate issuing CA to issue certificates.
