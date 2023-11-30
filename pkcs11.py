@@ -1,8 +1,8 @@
-import os
+# Initialization & Token/ Slot Enumeration.
+
+
 import pkcs11
 from pkcs11 import *
- 
- 
  
 # Specify the correct environment variable that contains the path to the PKCS#11 library
 pkcs11_lib_path = '/opt/nfast/toolkits/pkcs11/libcknfast.so'
@@ -10,28 +10,48 @@ pkcs11_lib_path = '/opt/nfast/toolkits/pkcs11/libcknfast.so'
 # Load the PKCS#11 library from the specified path
 lib = pkcs11.lib(pkcs11_lib_path)
  
-# Get a token object from the loaded library, specifying the token label ('loadshared accelerator' in this case)
-token = lib.get_token(token_label='loadshared accelerator')
+# Get the token label from user input
+token_label = input("Please enter the token label: ")
  
-# FYI token_label will need one of the slot names from your /opt/nfast/cklist output.
-# Given that the CKNFAST_LOADSHARING = 1 variable puts all slots tokens into a singular slot, we're able to see them all pop at once.
+# Get a token object from the loaded library, specifying the user-provided token label
+token = lib.get_token(token_label=token_label)
  
-# Open a session with the token, indicating that it's a read-write session and providing the user PIN ('1234' in this case) for authentication
+# Open a session
+print('Opening session...\n',
+      'Enter the following values:\n', )
  
-# To login as Security Officer (SO) change user_pin to so_pin
+rw_value = input('Read Write Session? (True or False): '),
+pin = input("Enter your PIN: ")
+user_pin = int(pin)
  
-# example:
-#with token.open(rw=True, so_pin= 'asg123;') as session:
+with token.open(rw=rw_value, user_pin=pin) as session:
+    # Searches the provided token label
  
-# Login as user
-with token.open(rw=True, user_pin='1234') as session:
-     print(session)
+    for slot in lib.get_slots(token_present=True):
+        token = slot.get_token()
+        # mechanism = slot.get_mechanisms()
+        print('Tokens Present:\n', token)
  
-# Gets the slots names
+        # See the mechanisms for the slot
  
-for slot in lib.get_slots():
-    token = slot.get_token()
-    print(token)
+        # boolean_Mech = (input("See available mechanisms? Yes or No"))
  
-    if token.label == '...':
-        break
+        # See the objects of a slot
+        for obj in session.get_objects({
+            Attribute.CLASS: ObjectClass.SECRET_KEY,
+            Attribute.CLASS: ObjectClass.PUBLIC_KEY
+ 
+        }):
+            print('Objects Present:\n', obj)
+ 
+        if token.label == '...':
+            break
+    #  Searches for the objects of that token
+ 
+    print(session)
+ 
+ 
+def close():
+    close_session = session.close()
+ 
+    close()
