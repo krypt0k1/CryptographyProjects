@@ -16,6 +16,9 @@
 
 # This script is used to generate a new keypair on a nShield HSM  devices.
 
+
+# install pkcs11 module : pip install python-pkcs11
+
 import pkcs11
 import os
 import sys
@@ -34,11 +37,9 @@ print(sys.path)
 # If you're using a virtual environment, make sure pkcs11 is installed there
 # You can use pip list to see the installed packages
 
-# If there's a problem with your Python installation, you might need to reinstall Python or the module. 
+# If there's a problem with your Python installation, you might need to reinstall Python
 
-# install pkcs11 module: pip install python-pkcs11
-
-# This script is used to generate a new key pair on a nShield HSM Edge device.
+# This script is used to generate a new keypair on a nShield HSM Edge device.
 
 # The following environment variables must be set:
 #   - PKCS11_MODULE_PATH: the path to the pkcs11 module
@@ -64,24 +65,24 @@ lib = pkcs11.lib(os.environ['PKCS11_MODULE_PATH'])
 PKCS11_KEY_LABEL = input("Enter the key label: ")
 
 # Prompt for the token label
-token_label = input("Enter the token label: ")
+PKCS11_TOKEN_LABEL = input("Enter the token label: ")
 
 # Prompt for the PKCS11_PIN
-user_pin= input("Enter the token pin: ")
+PKCS11_PIN = input("Enter the token pin: ")
 
 # Get the token using the provided label
-token = lib.get_token(token_label=token_label)
+token = lib.get_token(token_label=PKCS11_TOKEN_LABEL)
 
 
 # Prompt for the key size
 key_size = int(input("Enter the key size (e.g., 2048): "))
 MODULUS_BITS = key_size
 
-# Prompt to ask if the user wants the pub key to be a wrapping key.
+# Prompt to ask if user wants pubkey to be wrapping key.
 WRAPPING_KEY = input("Do you want the public key to be a wrapping key? (y/n): ")
 
 # Token label
-token = lib.get_token(token_label=token_label)
+token = lib.get_token(token_label=PKCS11_TOKEN_LABEL)
 
 # The following templates are used to generate a keypair on the HSM.
 
@@ -111,7 +112,7 @@ private_key_template = {pkcs11.Attribute.TOKEN: True,
                     
 # Open Session with HSM and Generate Key Pair
 
-with token.open(rw=True,user_pin=user_pin) as session:
+with token.open(rw=True,user_pin=PKCS11_PIN) as session:
     
     try:
         key = session.get_key(label=PKCS11_KEY_LABEL)
