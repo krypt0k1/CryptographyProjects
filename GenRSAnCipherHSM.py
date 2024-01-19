@@ -77,7 +77,7 @@ token = lib.get_token(token_label=token_label)
 key_size = int(input("Enter the key size (e.g., 2048): "))
 MODULUS_BITS = key_size
 
-# Prompt to ask if user wants pubkey to be wrapping key.
+# Prompt to ask if the user wants the pub key to be a wrapping key.
 WRAPPING_KEY = input("Do you want the public key to be a wrapping key? (y/n): ")
 
 # Token label
@@ -92,7 +92,7 @@ public_key_template = {pkcs11.Attribute.TOKEN: True,
                        pkcs11.Attribute.VERIFY: True,
                        pkcs11.Attribute.MODIFIABLE: True,
                        pkcs11.Attribute.ENCRYPT: True,
-                      # pkcs11.Attribute.EXTRACTABLE: True,
+                      
 
                       }
 
