@@ -1,23 +1,41 @@
-# Proprietary and Confidential
-# Entrust Data Corp & nCipher Security 
-# Written by Armando Montero
+# Defining app banner. 
 
-# **************************************************************************
-# DISCLAIMER:
-# This code is provided for example purposes only.
-# It is not intended for production use. It has not been tested for security.
-# nCipher disclaims all warranties, express or implied, including without
-# limitation, any implied warranties of fitness of this code for any
-# particular purpose. nCipher shall not be liable for any damages, however
-# caused, arising out of any use of this code.
-# **************************************************************************
+def create_banner(text, width=80, border_char='*'):
+    lines = text.strip().split('\n')
+    border = border_char * width
 
-# All rights reserved
+    print(border)
+    for line in lines:
+        print(f"{border_char} {line.ljust(width - 4)} {border_char}")
+    print(border)
 
-# This script is used to generate a new keypair on a nShield HSM  devices.
+banner_text = """
+Proprietary and Confidential
+Entrust Data Corp & nCipher Security
+Written by Armando Montero
 
+**************************************************************************
+DISCLAIMER:
+This code is provided for example purposes only.
+It is not intended for production use. It has not been tested for security.
+nCipher disclaims all warranties, express or implied, including without
+limitation, any implied warranties of fitness of this code for any
+particular purpose. nCipher shall not be liable for any damages, however
+caused, arising out of any use of this code.
 
-# install pkcs11 module : pip install python-pkcs11
+Usage:
+  * Enter the key label (e.g., mykey)
+    * Enter the token label (e.g., loadshared accelerator)
+        * Enter the token pin   
+            * Enter the key size (e.g., 2048)
+            * Do you want the public key to be a wrapping key? (y/n)
+            * public key is generated
+            * private key is generated
+**************************************************************************
+
+"""
+
+create_banner(banner_text)
 
 import pkcs11
 import os
