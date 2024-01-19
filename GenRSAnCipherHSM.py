@@ -16,9 +16,6 @@
 
 # This script is used to generate a new keypair on a nShield HSM  devices.
 
-
-# install pkcs11 module : pip install python-pkcs11
-
 import pkcs11
 import os
 import sys
@@ -37,9 +34,11 @@ print(sys.path)
 # If you're using a virtual environment, make sure pkcs11 is installed there
 # You can use pip list to see the installed packages
 
-# If there's a problem with your Python installation, you might need to reinstall Python
+# If there's a problem with your Python installation, you might need to reinstall Python or the module. 
 
-# This script is used to generate a new keypair on a nShield HSM Edge device.
+# install pkcs11 module: pip install python-pkcs11
+
+# This script is used to generate a new key pair on a nShield HSM Edge device.
 
 # The following environment variables must be set:
 #   - PKCS11_MODULE_PATH: the path to the pkcs11 module
