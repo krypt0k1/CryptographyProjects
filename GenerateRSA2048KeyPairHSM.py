@@ -99,6 +99,7 @@ with token.open(rw=True) as session:
                                                public_template=public_key_template,
                                                private_template=private_key_template)
 
+    # Confirmation of key creation. 
     print('public key: %s' % public)
     print('private key: %s' % private)
     
