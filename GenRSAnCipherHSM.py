@@ -1,4 +1,4 @@
-Proprietary and Confidential
+# Proprietary and Confidential
 # Entrust Data Corp & nCipher Security 
 # Written by Armando Montero
 
