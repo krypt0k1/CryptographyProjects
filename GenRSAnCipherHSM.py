@@ -111,6 +111,8 @@ public_key_template = {pkcs11.Attribute.TOKEN: True,
                        pkcs11.Attribute.VERIFY: True,
                        pkcs11.Attribute.MODIFIABLE: True,
                        pkcs11.Attribute.ENCRYPT: True,
+                   
+                    
                       
 
                       }
@@ -130,6 +132,15 @@ private_key_template = {pkcs11.Attribute.TOKEN: True,
                     
 # Open Session with HSM and Generate Key Pair
 
+def format_key_output(key, key_type):
+    key_info = f"{key_type} Key:\n"
+    key_info += f"  Label: {getattr(key, 'label', 'N/A')}\n"
+    key_info += f"  Key Size: {getattr(key, 'key_size', MODULUS_BITS)}-bit\n"
+    key_info += f"  Key Type: {key.__class__.__name__}\n"
+    key_info += f"  Exponent: {getattr(key, 'public_exponent', '65537')}\n"
+  
+    return key_info
+
 with token.open(rw=True,user_pin=PKCS11_PIN) as session:
     
     try:
@@ -144,7 +155,10 @@ with token.open(rw=True,user_pin=PKCS11_PIN) as session:
                                                public_template=public_key_template,
                                                private_template=private_key_template)
 
-    # Confirmation of key creation. 
-    print('public key: %s' % public)
-    print('private key: %s' % private)
-    
+    key_info = format_key_output(public, "Public Key")
+    print(key_info)
+
+    key_info = format_key_output(private, "Private Key")
+    print(key_info)
+
+    print("Key pair generated successfully")
