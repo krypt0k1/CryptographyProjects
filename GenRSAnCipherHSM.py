@@ -1,4 +1,4 @@
-# Proprietary and Confidential
+Proprietary and Confidential
 # Entrust Data Corp & nCipher Security 
 # Written by Armando Montero
 
@@ -17,7 +17,6 @@
 # This script is used to generate a new keypair on a nShield HSM  devices.
 
 
-# Activate venv run : source /home/administrator/Documents/.venv/bin/activate
 # install pkcs11 module : pip install python-pkcs11
 
 import pkcs11
@@ -77,7 +76,10 @@ token = lib.get_token(token_label=token_label)
 
 # Prompt for the key size
 key_size = int(input("Enter the key size (e.g., 2048): "))
+MODULUS_BITS = key_size
 
+# Prompt to ask if user wants pubkey to be wrapping key.
+WRAPPING_KEY = input("Do you want the public key to be a wrapping key? (y/n): ")
 
 # Token label
 token = lib.get_token(token_label=token_label)
@@ -86,9 +88,11 @@ token = lib.get_token(token_label=token_label)
 
 public_key_template = {pkcs11.Attribute.TOKEN: True,
                        pkcs11.Attribute.PUBLIC_EXPONENT: 65537,
-                       pkcs11.Attribute.MODULUS_BITS: 2048,
-                       pkcs11.Attribute.WRAP: True,
+                       pkcs11.Attribute.MODULUS_BITS: MODULUS_BITS,
+                       pkcs11.Attribute.WRAP: WRAPPING_KEY,
                        pkcs11.Attribute.VERIFY: True,
+                       pkcs11.Attribute.MODIFIABLE: True,
+                       pkcs11.Attribute.ENCRYPT: True,
                       # pkcs11.Attribute.EXTRACTABLE: True,
 
                       }
@@ -99,6 +103,9 @@ private_key_template = {pkcs11.Attribute.TOKEN: True,
                         pkcs11.Attribute.UNWRAP: True,                        
                         pkcs11.Attribute.MODIFIABLE: True,
                         pkcs11.Attribute.EXTRACTABLE: False,
+                        pkcs11.Attribute.DECRYPT: True,
+                        pkcs11.Attribute.WRAP_WITH_TRUSTED: True,
+                        pkcs11.Attribute.SIGN: True,
                                             
 }
     
