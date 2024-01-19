@@ -130,8 +130,7 @@ private_key_template = {pkcs11.Attribute.TOKEN: True,
 }
     
                     
-# Open Session with HSM and Generate Key Pair
-
+# Format Key info
 def format_key_output(key, key_type):
     key_info = f"{key_type} Key:\n"
     key_info += f"  Label: {getattr(key, 'label', 'N/A')}\n"
@@ -141,6 +140,7 @@ def format_key_output(key, key_type):
   
     return key_info
 
+# Open Session with HSM and Generate Key Pair
 with token.open(rw=True,user_pin=PKCS11_PIN) as session:
     
     try:
