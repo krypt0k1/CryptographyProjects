@@ -1,14 +1,19 @@
 # Defining app banner.
  
 def create_banner(text, width=80, border_char='*'):
-lines = text.strip().split('\n')
-border = border_char * width
+
+    lines = text.strip().split("\n")
+
+    border = border_char * width
  
-print(border)
-for line in lines:
-print(f"{border_char} {line.ljust(width - 4)} {border_char}")
-print(border)
- 
+    print(border)
+
+    for line in lines:
+    
+        print(f"{border_char} {line.ljust(width - 4)} {border_char}")
+
+    print(border)
+   
 banner_text = """
 Proprietary and Confidential
 Entrust Data Corp & nCipher Security
@@ -43,9 +48,9 @@ import sys
  
 # Check if pkcs11 is installed
 try:
-import pkcs11
-except ImportError:
-print("pkcs11 module is not installed")
+    import pkcs11
+except ImportError: 
+    print("pkcs11 module is not installed")
  
 # Check the directories in sys.path
 import sys
@@ -64,7 +69,7 @@ print(sys.path)
 # - PKCS11_TOKEN_LABEL: the label of the token to use
 # - PKCS11_PIN: the pin of the token to use
  
-os.environ['PKCS11_MODULE_PATH'] = '/opt/nfast/toolkits/pkcs11/libcknfast.so'
+os.environ['PKCS11_MODULE_PATH'] = 'C:\\Program Files\\nCipher\\nfast\\toolkits\\pkcs11\\cknfast.dll'
 os.environ['CKNFAST_LOADSHARING'] = '1'
 os.environ['CKNFAST_FAKE_ACCELERATOR_LOGIN'] = '1'
  
@@ -132,30 +137,45 @@ pkcs11.Attribute.SIGN: True,
  
 # Format Key info
 def format_key_output(key, key_type):
-key_info = f"{key_type} Key:\n"
-key_info += f" Label: {getattr(key, 'label', 'N/A')}\n"
-key_info += f" Key Size: {getattr(key, 'key_size', MODULUS_BITS)}-bit\n"
-key_info += f" Key Type: {key.__class__.__name__}\n"
-key_info += f" Exponent: {getattr(key, 'public_exponent', '65537')}\n"
- 
-return key_info
- 
+    key_info = f"{key_type} Key:\n"
+    key_info += f" Label: {getattr(key, 'label', 'N/A')}\n"
+    key_info += f" Key Size: {getattr(key, 'key_size', MODULUS_BITS)}-bit\n"
+    return key_info
+    key_info += f" Key Type: {key.__class__.__name__}\n"
+    key_info += f" Exponent: {getattr(key, 'public_exponent', '65537')}\n"
+    key_info += f" Modulus: {getattr(key, 'modulus', 'N/A')}\n"
+    key_info += f" ID: {getattr(key, 'id', 'N/A')}\n"
+    key_info += f" Check Value: {getattr(key, 'check_value', 'N/A')}\n"
+    key_info += f" Local: {getattr(key, 'local', 'N/A')}\n"
+    key_info += f" Private: {getattr(key, 'private', 'N/A')}\n"
+    key_info += f" Modifiable: {getattr(key, 'modifiable', 'N/A')}\n"
+    key_info += f" Derive: {getattr(key, 'derive', 'N/A')}\n"
+    key_info += f" Start Date: {getattr(key, 'start_date', 'N/A')}\n"
+    key_info += f" End Date: {getattr(key, 'end_date', 'N/A')}\n"
+    key_info += f" Wrap: {getattr(key, 'wrap', 'N/A')}\n"
+    key_info += f" Unwrap: {getattr(key, 'unwrap', 'N/A')}\n"
+    key_info += f" Sign: {getattr(key, 'sign', 'N/A')}\n"
+    key_info += f" Verify: {getattr(key, 'verify', 'N/A')}\n"
+    key_info += f" Encrypt: {getattr(key, 'encrypt', 'N/A')}\n"
+    key_info += f" Decrypt: {getattr(key, 'decrypt', 'N/A')}\n"
+    return key_info
+
 # Open Session with HSM and Generate Key Pair
-with token.open(rw=True,user_pin=PKCS11_PIN) as session:
- 
-try:
-key = session.get_key(label=PKCS11_KEY_LABEL)
-sys.exit('object with label="%s" already exists' % PKCS11_KEY_LABEL)
-except pkcs11.exceptions.NoSuchKey:
-pass
-except pkcs11.MultipleObjectsReturned:
-sys.exit('multiple objects with label="%s" already exist' % PKCS11_KEY_LABEL)
+with token.open(rw=True, user_pin=PKCS11_PIN) as session:
+    try:
+        key = session.get_key(label=PKCS11_KEY_LABEL)
+        sys.exit('object with label="%s" already exists' % PKCS11_KEY_LABEL)
+    except pkcs11.exceptions.NoSuchKey:
+        pass
+    except pkcs11.exceptions.MultipleObjectsReturned:
+        sys.exit('multiple objects with label="%s" already exist' % PKCS11_KEY_LABEL)
  
 public, private = session.generate_keypair(pkcs11.KeyType.RSA, key_size, label=PKCS11_KEY_LABEL,
-public_template=public_key_template,
-private_template=private_key_template)
+                                           public_template=public_key_template,
+                                           private_template=private_key_template)
  
 key_info = format_key_output(public, "Public Key")
+
 print(key_info)
  
 key_info = format_key_output(private, "Private Key")
