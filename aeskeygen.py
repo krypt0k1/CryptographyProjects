@@ -113,13 +113,7 @@ def main():
                     'Key Type: AES']
                 
                 pprint(key_info[::-1])
-                  #  'Key Version:' (args['key_version']),
-                   # 'Token Label:' (args['token_label']),
-                
-               # pprint(key_info)
-                #logger.info(f'Key successfully generated: \n'
-                #           f'Label: {key_label}\n'
-                ##          f'Key Object: {key}\n')
+                 
             except Exception as e:
                 logger.error("Error generating the key: %s", str(e))
 
