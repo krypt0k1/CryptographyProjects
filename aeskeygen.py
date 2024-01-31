@@ -1,3 +1,6 @@
+# Description: Advanced Encryption Standard PKCS#11 Key Generator Script for nCipher Security Hardware Security Modules ( Entrust, Thales, nCipher). 
+
+
 import argparse
 import logging
 import os
