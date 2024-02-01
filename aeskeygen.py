@@ -182,6 +182,4 @@ if __name__ == "__main__":
         logger.error(repr(e))
         raise e
 
-    except Exception as e:
-        logger.error(repr(e))
-        raise e
+  
