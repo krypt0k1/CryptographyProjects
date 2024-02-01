@@ -16,7 +16,7 @@ LIB = os.path.join(os.environ.get("NFAST_HOME", '/opt/nfast'),
 
 GENERATE = 'generate'
 DELETE = 'delete'
-TOKEN = 'token'
+TOKEN = 'find-token'
 
 # Define environment variables. 
 os.environ["CKNFAST_LOADSHARING"] = '1'
@@ -66,8 +66,9 @@ def parse_args():
                         required=False,
                         default='loadshared accelerator')
    parser.add_agument('f', '--find-token',
-                      help='Looks for desired token label'
-                      'f'
+                      help='Looks for desired token label',
+                      required=False,
+                      default='loadshared accelerator')
     args = vars(parser.parse_args())
     return args
 
@@ -76,7 +77,7 @@ def main():
     args = parse_args()  # Parse the arguments
     generate = GENERATE in args and args[GENERATE]
     delete = DELETE in args and args[DELETE]
-    token_found = TOKEN in args and args[TOKEN]
+    token_found = TOKEN_FOUND in args and args[TOKEN_FOUND]
   
 # Grab arguments from input. 
     key_label = args.get('label')  # Fetch the label from arguments
