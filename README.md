@@ -20,7 +20,7 @@ Integrating PKCS #11 with HSMs has proven invaluable for a wide range of applica
 Prereqs
 
     - Have the latest version of Python (python3)
-    - Download the pkcs11 module
+    - Download the necessary Python modules
      -Run pip install python and pip install python-pkcs11
     - Enable the following variables on your /opt/nfast/cknfastrc file
         CKNFAST_FAKE_ACCELERATOR_LOGIN = 1
