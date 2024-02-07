@@ -92,6 +92,68 @@ Here's a general overview of the typical process:
         Terminate the PKCS #11 library usage by calling the C_Finalize function. This releases any resources and cleans up the PKCS #11 environment.
 
 
+Advanced Encryption Standard (AES) Key Generator Script
+
+Features:
+1. Generates keys.
+2. Deletes keys.
+3. Find tokens based on the label. 
+4. Lists all available slots.
+
+Usage:
+![image-2024-2-7_8-10-24](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/13cc4dc2-6f81-4c77-bfa5-9351762d965b)
+
+
+1. Create a key 
+
+aeskeygen.py --generate --token-label 'loadshared accelerator' --pin 1234 --label new_key-22 --key-size 256 (verbose)
+
+aeskeygen.py -g -t 'loadshared accelerator' -p 1234 -l new_key 22 -k 256 (short-argument)
+
+Output:
+![image-2024-2-7_8-6-31](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/96a83bfb-aa74-40cf-a096-5a366d03cbe5)
+
+
+## AES KEY SIZE REF##
+128-bit AES key /8 = 16 bytes
+192-bit AES key /8 = 24 bytes
+256-bit AES key /8 = 32 bytes. 
+
+
+2. Delete a key
+
+aeskeygen.py --delete --label my_key --token-label 'loadshared accelerator'  (verbose)
+
+aeskeygen.py -d -l my_key t 'loadshared accelerator' (short-argument)
+
+Output:
+![image-2024-2-7_7-31-23](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/b39b56af-bf21-42d3-9aa9-a5fa7c6a3b8f)
+
+3. Finds Tokens
+
+aeskeygen.py --find-token --token-label 'loadshared accelerator' 
+
+aeskeygen.py -f -t 'loadshared accelerator' 
+
+Output:
+![image-2024-2-6_23-1-14](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/5531c06a-982f-4a63-a848-baf529e4ddd4)
+
+
+4. Find Slots 
+
+aeskeygen.py --find-slots (verbose)
+
+aeskeygen.py -s  (short-argument)
+
+
+Output:
+
+![image-2024-2-7_7-34-54](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/695152ad-3c17-42ae-9b71-b5246284960a)
+
+
+
+
+
 
 
 
