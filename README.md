@@ -92,7 +92,7 @@ Here's a general overview of the typical process:
         Terminate the PKCS #11 library usage by calling the C_Finalize function. This releases any resources and cleans up the PKCS #11 environment.
 
 
-Advanced Encryption Standard (AES) Key Generator Script
+Advanced Encryption Standard (AES) Key Generator Script (aeskeygen.py)
 
 Features:
 1. Generates keys.
