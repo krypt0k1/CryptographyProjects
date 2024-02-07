@@ -31,7 +31,9 @@ Prereqs
            * Enable PKCS#11 Debug logs only if troubleshooting or if you want to see the interaction between the HSM and API.
             The directory for the debug file is arbitrary; place it where your heart feels like (heart) slightly smiling face.
 
-            ![image](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/a1268649-a4a8-4ce4-99bf-1ec72ca45b77)
+
+
+![image](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/bdf4b941-08eb-4bb5-8847-57d5f24c5d73)
 
 
 Introduction
