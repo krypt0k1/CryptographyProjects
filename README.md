@@ -115,9 +115,12 @@ Output:
 ![image-2024-2-7_8-6-31](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/96a83bfb-aa74-40cf-a096-5a366d03cbe5)
 
 
-AES Key Size Reference:
+   AES Key Size Reference:
+
 128-bit AES key /8 = 16 bytes
+
 192-bit AES key /8 = 24 bytes
+
 256-bit AES key /8 = 32 bytes. 
 
 
