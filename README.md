@@ -111,6 +111,7 @@ aeskeygen.py --generate --token-label 'loadshared accelerator' --pin 1234 --labe
 aeskeygen.py -g -t 'loadshared accelerator' -p 1234 -l new_key 22 -k 256 (short-argument)
 
 Output:
+
 ![image-2024-2-7_8-6-31](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/96a83bfb-aa74-40cf-a096-5a366d03cbe5)
 
 
@@ -127,6 +128,7 @@ aeskeygen.py --delete --label my_key --token-label 'loadshared accelerator'  (ve
 aeskeygen.py -d -l my_key t 'loadshared accelerator' (short-argument)
 
 Output:
+
 ![image-2024-2-7_7-31-23](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/b39b56af-bf21-42d3-9aa9-a5fa7c6a3b8f)
 
 3. Finds Tokens
