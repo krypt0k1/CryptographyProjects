@@ -15,7 +15,7 @@ Integrating PKCS #11 with HSMs has proven invaluable for a wide range of applica
 
 # Cryptoki Application Interface (API)
 
-![image](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/b5c13206-7d6f-4a30-9eb2-ace3a203f3cc)
+
 
 Prereqs
 
@@ -30,6 +30,9 @@ Prereqs
         CKNFAST_OVERRIDE_SECURITY_ASSURANCES=all 
            * Enable PKCS#11 Debug logs only if troubleshooting or if you want to see the interaction between the HSM and API.
             The directory for the debug file is arbitrary; place it where your heart feels like (heart) slightly smiling face.
+
+            ![image](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/a1268649-a4a8-4ce4-99bf-1ec72ca45b77)
+
 
 Introduction
 
@@ -86,23 +89,7 @@ Here's a general overview of the typical process:
     8.Finalization:
         Terminate the PKCS #11 library usage by calling the C_Finalize function. This releases any resources and cleans up the PKCS #11 environment.
 
-It's important to note that while these steps provide a general outline of the PKCS #11 process, the actual implementation details and function names may vary based on the specific PKCS #11 library and token vendor.
 
-Developers need to refer to the documentation provided by the vendor to understand the exact functions and parameters required for their specific use case.
-
-
-Code Progress
-WORK IN PROGRESS
-
-
-Milestones:
-
-Create GUI with functional buttons. ✔️
-Create an organized UI for the application.
-Tie buttons to call various functions of the Entrust PKCS #11 library.
-Test if buttons can action the function call.
-Debug
-TBD
 
 
 
