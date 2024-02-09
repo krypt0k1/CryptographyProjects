@@ -26,6 +26,16 @@ os.environ["CKNFAST_OVERRIDE_SECURITY_ASSURANCES"] = "unwrap_mech;tokenkeys"
 os.environ["CKNFAST_FAKE_ACCELERATOR_LOGIN"] = "1"
 
 
+# Custom class to allow attribute parsing. 
+
+class StoreAttributeAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        if values is not None:
+            for value in values:
+                attr, bool_value = value.split('=')
+                bool_value = bool_value.lower() in ['yes', 'true', 't', 'y', '1']
+                setattr(namespace, self.dest, getattr(namespace, self.dest, []) + [(attr, bool_value)])
+        
 # Define arguments.
 def parse_args():
     """
@@ -45,6 +55,7 @@ def parse_args():
         "       %(prog)s --delete --label 'my_key' --token-label 'loadshared accelerator'\n",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         add_help=True,
+        allow_abbrev=True,
     )
     parser.add_argument("-d","--delete",
                         help="Delete the keys with the given version",
@@ -84,7 +95,13 @@ def parse_args():
                         required=False,
                         action="store_true",
                         default=False)
-    
+    parser.add_argument("-a", '--attribute',
+                        help="Attribute to apply to the key",
+                        required=False,
+                        default=[],
+                        nargs='+',
+                        action=StoreAttributeAction)  
+     
     args = vars(parser.parse_args())
     return args
 
@@ -96,6 +113,7 @@ def main():
     key_label = args["label"]
     pin = args["pin"]
     slot_label = args["find_slots"]
+    attribute = args["attribute"]
     
 
     
@@ -103,7 +121,7 @@ def main():
     if args["find_token"]:
         find_token(token_label)
     elif args["generate"]:
-        gen_key(token_label, key_label, key_size,template, pin) # type: ignore        
+        gen_key(token_label, key_label, key_size,template, attribute, pin) # type: ignore        
     elif args["delete"]:
         delete_key(token_label, key_label,pin )        
     elif args["find_slots"]:
@@ -117,7 +135,7 @@ def get_slot(slot_label):
         slot_list = [str(s) for s in slot]
         
         table = Table(show_header=True, header_style="red", show_lines=True, title="Slots information")
-        table.add_column("Available Slots 😊", style="bright", width=45, justify="center")  # Added emoji smiley face
+        table.add_column("Available Slots ðŸ˜Š", style="bright", width=45, justify="center")  # Added emoji smiley face
         table.title_style = "italic"
         table.title = "Slot information"
         table.border_style= "green"
@@ -133,26 +151,44 @@ def get_slot(slot_label):
         logger.error("No slot found with label='%s'.", slot_label)
     except Exception as e:
         logger.error("An error occurred while finding the slot: %s", str(e))
+        raise e
 
+
+    
 
 # AES Key Template
 template = {
-            pkcs11.Attribute.TOKEN: True,
-            pkcs11.Attribute.PRIVATE: False,
-            pkcs11.Attribute.MODIFIABLE: True,
-            pkcs11.Attribute.SENSITIVE: True,
-            pkcs11.Attribute.EXTRACTABLE: True,
-            pkcs11.Attribute.WRAP_WITH_TRUSTED: True,
-            pkcs11.Attribute.ENCRYPT: False,
-            pkcs11.Attribute.DECRYPT: False,
-            pkcs11.Attribute.WRAP: True,
-            pkcs11.Attribute.UNWRAP: False,
-            pkcs11.Attribute.SIGN: False,
-            pkcs11.Attribute.VERIFY: False,
+            pkcs11.Attribute.TOKEN: "TOKEN",
+            pkcs11.Attribute.PRIVATE: "PRIVATE",
+            pkcs11.Attribute.MODIFIABLE: "MODIFIABLE",
+            pkcs11.Attribute.SENSITIVE: "SENSITIVE",
+            pkcs11.Attribute.EXTRACTABLE: "EXTRACTABLE",
+            pkcs11.Attribute.WRAP_WITH_TRUSTED: "WRAP_WITH_TRUSTED",
+            pkcs11.Attribute.ENCRYPT: "ENCRYPT",
+            pkcs11.Attribute.DECRYPT: "DECRYPT",
+            pkcs11.Attribute.WRAP: "WRAP",
+            pkcs11.Attribute.UNWRAP: "UNWRAP",
+            pkcs11.Attribute.SIGN: "SIGN",
+            pkcs11.Attribute.VERIFY: "VERIFY",
+           
+            
         }
+# Grab parse for attribute values. 
+args = parse_args()       
+attribute_values = args["attribute"]  
+
+# Iterate through the attribute values and apply them to the template
+
+for attr, value in attribute_values:
+    # Convert the attribute name to its corresponding attribute value
+    attr = getattr(pkcs11.Attribute, attr)
+
+    # Apply the boolean value to the template
+    template[attr] = value
+
 
 # Verify if a key already exists
-def gen_key(token_label, key_label, key_size, template, pin):
+def gen_key(token_label, key_label, key_size, template, attribute,pin):
     try:
         token = lib.get_token(token_label=token_label)
         with token.open(rw=True, user_pin=pin) as session:
@@ -171,14 +207,12 @@ def gen_key(token_label, key_label, key_size, template, pin):
         
         # Call print_key_info to display the generated key's information
         print_key_info(key)
-        return key       
-
-              
-    
-        
+        return key     
+                   
 
 # Create and define a table for the key information
 console = Console()
+    
 table = Table(show_header=True, header_style="red", show_lines=True, title="Key Information")
 table.add_column("Attribute", style="dim", width=25, justify="center")
 
@@ -189,7 +223,7 @@ table.title = "Key Information"
 table.border_style = "green"
 
     
-    # Print key information
+# Print key information
 def print_key_info(key):
     key_info = {
         "LABEL": key.__getitem__(pkcs11.Attribute.LABEL),
@@ -208,6 +242,7 @@ def print_key_info(key):
         "UNWRAP": key.__getitem__(pkcs11.Attribute.UNWRAP),
         "SIGN": key.__getitem__(pkcs11.Attribute.SIGN),
         "VERIFY": key.__getitem__(pkcs11.Attribute.VERIFY),
+        
     }
     for attribute, value in key_info.items():
         table.add_row(attribute, str(value))
@@ -217,7 +252,6 @@ def print_key_info(key):
 # 128-bit AES key /8 = 16 bytes
 # 192-bit AES key /8 = 24 bytes
 # 256-bit AES key /8 = 32 bytes
-
 
 
 # Delete a key
