@@ -102,8 +102,7 @@ Generates keys.
 Usage:
 ![image-2024-2-9_18-33-32](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/ae453d72-774e-4a72-80aa-22f1d4d06f31)
 
-
-1. Create a key 
+1. Create a Key. 
 
 aeskeygen.py --generate --token-label 'loadshared accelerator' --pin 1234 --label new_key-22 --key-size 256 (verbose)
 
@@ -122,13 +121,11 @@ Output:
 
 256-bit AES key /8 = 32 bytes. 
 
-
-1a. Custom Key Attributes
+1a. Create a Key with Custom Attributes. 
 
 aeskeygen.py -g -t 'loadshared accelerator' -l new_key_1234 -k 256 -a WRAP_WITH_TRUSTED=false ENCRYPT=no WRAP=n SIGN=y
 
 ![Capture](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/022b74a8-c7b5-421e-97d3-dd822b945646)
-
 
 2. Delete a key
 
