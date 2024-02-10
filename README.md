@@ -92,17 +92,22 @@ Here's a general overview of the typical process:
         Terminate the PKCS #11 library usage by calling the C_Finalize function. This releases any resources and cleans up the PKCS #11 environment.
 
 
-Advanced Encryption Standard (AES) Key Generator Script (aeskeygen.py)
+# Advanced Encryption Standard (AES) Key Generator Script (aeskeygen.py)
 
-Generates keys.
-1. Can add custom boolean attributes to a key. 
-2. Available attributes: TRUSTED, PRIVATE, PRIVATE, MODIFIABLE, SENSITIVE, EXTRACTABLE, WRAP_WITH_TRUSTED, ENCRYPT, DECRYPT, WRAP, UNWRAP, SIGN, and VERIFY. 
-3. Available value pairs:  { True, yes, y, 1}  {False, no, n, 0}
+Features:
+
+1. Generates keys.
+    a. Can add custom boolean attributes to a key. 
+    b. Available attributes: TRUSTED, PRIVATE, PRIVATE, MODIFIABLE, SENSITIVE, EXTRACTABLE, WRAP_WITH_TRUSTED, ENCRYPT, DECRYPT, WRAP, UNWRAP, SIGN, and VERIFY. 
+    c. Available value pairs:  { True, yes, y, 1}  {False, no, n, 0}
+ 3. Deletes keys.
+ 4. Find tokens based on the label. 
+ 5. Lists all available slots.   
 
 Usage:
 ![image-2024-2-9_18-33-32](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/ae453d72-774e-4a72-80aa-22f1d4d06f31)
 
-1. Create a Key. 
+# 1. Create a Key. 
 
 aeskeygen.py --generate --token-label 'loadshared accelerator' --pin 1234 --label new_key-22 --key-size 256 (verbose)
 
@@ -121,13 +126,13 @@ Output:
 
 256-bit AES key /8 = 32 bytes. 
 
-1a. Create a Key with Custom Attributes. 
+# 1a. Create a Key with Custom Attributes. 
 
 aeskeygen.py -g -t 'loadshared accelerator' -l new_key_1234 -k 256 -a WRAP_WITH_TRUSTED=false ENCRYPT=no WRAP=n SIGN=y
 
 ![Capture](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/022b74a8-c7b5-421e-97d3-dd822b945646)
 
-2. Delete a key
+# 2. Delete a key
 
 aeskeygen.py --delete --label my_key --token-label 'loadshared accelerator'  (verbose)
 
@@ -137,7 +142,7 @@ Output:
 
 ![image-2024-2-7_7-31-23](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/b39b56af-bf21-42d3-9aa9-a5fa7c6a3b8f)
 
-3. Finds Tokens
+# 3. Finds Tokens
 
 aeskeygen.py --find-token --token-label 'loadshared accelerator' 
 
@@ -147,7 +152,7 @@ Output:
 ![image-2024-2-6_23-1-14](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/5531c06a-982f-4a63-a848-baf529e4ddd4)
 
 
-4. Find Slots 
+# 4. Find Slots 
 
 aeskeygen.py --find-slots (verbose)
 
