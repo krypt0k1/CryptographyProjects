@@ -101,7 +101,7 @@ Features:
 4. Lists all available slots.
 
 Usage:
-![image-2024-2-7_8-10-24](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/13cc4dc2-6f81-4c77-bfa5-9351762d965b)
+![image-2024-2-9_18-33-32](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/ae453d72-774e-4a72-80aa-22f1d4d06f31)
 
 
 1. Create a key 
@@ -122,6 +122,13 @@ Output:
 192-bit AES key /8 = 24 bytes
 
 256-bit AES key /8 = 32 bytes. 
+
+
+1a. Custom Key Attributes
+
+aeskeygen.py -g -t 'loadshared accelerator' -l new_key_1234 -k 256 -a WRAP_WITH_TRUSTED=false ENCRYPT=no WRAP=n SIGN=y
+
+![Capture](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/022b74a8-c7b5-421e-97d3-dd822b945646)
 
 
 2. Delete a key
