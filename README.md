@@ -94,11 +94,13 @@ Here's a general overview of the typical process:
 
 Advanced Encryption Standard (AES) Key Generator Script (aeskeygen.py)
 
-Features:
-1. Generates keys.
-2. Deletes keys.
-3. Find tokens based on the label. 
-4. Lists all available slots.
+Generates keys.
+1. Can add custom boolean attributes to a key. 
+2. Available attributes: TRUSTED, PRIVATE, PRIVATE, MODIFIABLE, SENSITIVE, EXTRACTABLE, WRAP_WITH_TRUSTED, ENCRYPT, DECRYPT, WRAP, UNWRAP, SIGN, and VERIFY. 
+3. Available value pairs: 
+    { True, yes, y,1}
+     
+    {False, no, n, 0}
 
 Usage:
 ![image-2024-2-9_18-33-32](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/ae453d72-774e-4a72-80aa-22f1d4d06f31)
