@@ -237,8 +237,9 @@ for chunk in key.encrypt(chunks,
          A different IV will result in a pkcs11.Exception error MechanismParamInvalid.
       c. If you use a 128-bit IV that will equal 16 bytes reading the IV from the encrypted file will look something like this:
  
-       with open(input_file_path, "rb") as file:
-                iv = file.read(16)
+      with open(input_file_path, "rb") as file:
+      
+       iv = file.read(16)
 
 From API ref:
 
