@@ -166,7 +166,7 @@ Output:
 
 
 
-# Advanced Encryption Standard (AES) Encryption/Decryption Script
+# Advanced Encryption Standard (AES) Encryption/Decryption Script (aes-encryption.py)
 
 # Features
 
