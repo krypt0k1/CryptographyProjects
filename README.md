@@ -166,7 +166,90 @@ Output:
 
 
 
+# Advanced Encryption Standard (AES) Encryption/Decryption Script
 
+# Features
+
+  1. Encrypt files with a given AES key that contains CKA_ENCRYPT & CKA_DECRYPT attributes. 
+  2. Decrypt files with the given AES key used for encryption. 
+
+# Usage: 
+
+aes-encrypt.py -h
+
+
+# 1. Encrypting a txt file
+
+For our example, we will be encrypting a txt file named 'encrypt_me.txt' which we have filled with some text data. 
+
+aes-encryption.py -e -k new_key -t 'loadshared accelerator' -o /home/administrator/Desktop/decrypted.txt -i /home/administrator/Desktop/encrypted.txt 
+
+Output:
+
+![image-2024-2-14_18-18-10](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/3cf500ff-cb80-4f73-a138-a2887b7c660e)
+
+
+Confirming file was encrypted:
+![image-2024-2-14_18-19-4](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/7d032d04-e712-4674-9b45-2976b5a682b1)
+
+
+# 2. Decrypting a txt file
+
+Ideally, the receiver would like to read the scrambled data. 
+
+To decrypt execute:
+
+aes-encryption.py" -d -k new_key -t 'loadshared accelerator' -i /home/administrator/Desktop/encrypted.txt -o /home/administrator/Desktop/decrypted.txt
+
+
+Output: 
+![image-2024-2-14_18-22-45-1](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/d433ed76-8025-4bec-ab6f-23305c348f63)
+
+
+The output depicts the original file we encrypted, the file in an encrypted format, and the file we obtained after decryption. As observed in the syntax, the order of the arguments is irrelevant, all that's needed is the required arguments. 
+
+Limitations and other notes.
+
+ 1. The current program logic only allows text files to be encrypted and decrypted. 
+ 2. A different logic for encryption and decryption must be used for larger files or files with other formats such as jpg, png, and so on. 
+ 3. This would entail using a 'Generator' that is consumed at the time of encryption or decryption. It would also need to break the data into chunks for encryption and the decryption portion reorganizes the chunks back to plaintext or the original format. 
+ 4. An example of this shown in the python-pkcs11 API reference can be seen below:
+
+buffer_size = 8192
+with \\
+        open(file_in, 'rb') as input, \\
+        open(file_out, 'wb') as output:
+
+ # A generator yielding chunks of the file
+chunks = iter(lambda: input.read(buffer_size), '')
+
+for chunk in key.encrypt(chunks,
+                             mechanism_param=iv,
+                             buffer_size=buffer_size):
+     output.write(chunk)
+
+
+   2. Initialization Vectors or IV's must always be used for encryption/decryption. 
+      a. A challenging part of decryption was that I could not generate another random IV to decrypt the file.
+      b. You will always need to read the IV you set for the encrypted file to decrypt the file with the key. 
+         A different IV will result in a pkcs11.Exception error MechanismParamInvalid.
+      c. If you use a 128-bit IV that will equal 16 bytes reading the IV from the encrypted file will look something like this:
+ 
+       with open(input_file_path, "rb") as file:
+                iv = file.read(16)
+
+From API ref:
+
+An initialization vector (IV) or starting variable (SV) is data that is used by several modes to randomize the encryption and hence to produce distinct ciphertexts even if the same plaintext is encrypted multiple times.
+
+An initialization vector has different security requirements than a key, so the IV usually does not need to be secret. However, in most cases, it is important that an initialization vector is never reused under the same key. For CBC and CFB, reusing an IV leaks some information about the first block of plaintext, and about any common prefix shared by the two messages. For OFB and CTR, reusing an IV completely destroys security.
+
+In CBC mode, the IV must, in addition, be unpredictable at encryption time; in particular, the (previously) common practice of re-using the last ciphertext block of a message as the IV for the next message is insecure.
+
+We recommend using pkcs11.Session.generate_random() to create a quality IV.
+
+
+   3. By default AES_CBC_PAD is used for encryption. 
 
 
 
