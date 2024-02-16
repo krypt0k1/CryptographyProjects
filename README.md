@@ -168,7 +168,7 @@ Output:
 
 # Advanced Encryption Standard (AES) Encryption/Decryption Script (aes-encryption.py)
 
-# Features
+Features
 
   1. Encrypt files with a given AES key that contains CKA_ENCRYPT & CKA_DECRYPT attributes. 
   2. Decrypt files with the given AES key used for encryption. 
