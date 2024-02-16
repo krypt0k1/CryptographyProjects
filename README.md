@@ -223,19 +223,20 @@ with \\
         open(file_out, 'wb') as output:
 
  '' A generator yielding chunks of the file''
+ 
 chunks = iter(lambda: input.read(buffer_size), '')
 
 for chunk in key.encrypt(chunks,
                              mechanism_param=iv,
                              buffer_size=buffer_size):
-     output.write(chunk)
+                             
+output.write(chunk)
 
 
-   2. Initialization Vectors or IV's must always be used for encryption/decryption. 
-      a. A challenging part of decryption was that I could not generate another random IV to decrypt the file.
-      b. You will always need to read the IV you set for the encrypted file to decrypt the file with the key. 
-         A different IV will result in a pkcs11.Exception error MechanismParamInvalid.
-      c. If you use a 128-bit IV that will equal 16 bytes reading the IV from the encrypted file will look something like this:
+ 2. Initialization Vectors or IV's must always be used for encryption/decryption.
+    - A challenging part of decryption was that I could not generate another random IV to decrypt the file.    
+    - You will always need to read the IV you set for the encrypted file to decrypt the file with the key. A different IV will result in a pkcs11.Exception error MechanismParamInvalid.
+    - If you use a 128-bit IV that will equal 16 bytes reading the IV from the encrypted file will look something like this:
  
       with open(input_file_path, "rb") as file:
       
