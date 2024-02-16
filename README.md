@@ -174,6 +174,8 @@ Output:
   2. Decrypt files with the given AES key used for encryption. 
 
 # Usage: 
+![image-2024-2-14_18-10-30](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/11bb8230-ecfd-4627-bb7f-3db545ff6ec7)
+
 
 aes-encrypt.py -h
 
@@ -220,7 +222,7 @@ with \\
         open(file_in, 'rb') as input, \\
         open(file_out, 'wb') as output:
 
- # A generator yielding chunks of the file
+ '' A generator yielding chunks of the file''
 chunks = iter(lambda: input.read(buffer_size), '')
 
 for chunk in key.encrypt(chunks,
