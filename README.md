@@ -229,20 +229,16 @@ Limitations and other notes.
  3. This would entail using a 'Generator' that is consumed at the time of encryption or decryption. It would also need to break the data into chunks for encryption and the decryption portion reorganizes the chunks back to plaintext or the original format. 
  4. An example of this shown in the python-pkcs11 API reference can be seen below:
 
+
+'''python
 buffer_size = 8192
-with \\
-        open(file_in, 'rb') as input, \\
-        open(file_out, 'wb') as output:
-
- '' A generator yielding chunks of the file''
- 
-chunks = iter(lambda: input.read(buffer_size), '')
-
-for chunk in key.encrypt(chunks,
-                             mechanism_param=iv,
-                             buffer_size=buffer_size):
-                             
+with open(file_in, 'rb') as input, open(file_out, 'wb') as output:
+#A generator yielding chunks of the file 
+chunks = iter(lambda: input.read(buffer_size), '') 
+for chunk in key.encrypt(chunks,mechanism_param=iv, buffer_size=buffer_size):                             
 output.write(chunk)
+'''
+
 
 
  2. Initialization Vectors or IVs must always be used for encryption/decryption.
