@@ -7,6 +7,8 @@ import os
 from rich import print
 from rich.table import Table
 from rich.console import Console
+from rich.console import Console
+from rich.table import Table
  
  
 # Setup Configuration
@@ -57,6 +59,17 @@ def parse_args():
         add_help=True,
         allow_abbrev=True,
     )
+   
+    parser.add_argument("-g","--generate",
+                        help="generate new keys",
+                        required=False,
+                        default=False,
+                        action="store_true")  
+    parser.add_argument('-cp', '--copy',
+                        help= "Copy the key with the given label",
+                        required=False,
+                        action='store_true',
+                        default=False,)  
     parser.add_argument("-d","--delete",
                         help="Delete the keys with the given version",
                         required=False,
@@ -65,26 +78,21 @@ def parse_args():
     parser.add_argument("-p","--pin",
                         help="The pin of the token to use",
                         required=False,
-                        default="1234")  # Default pin if none is provided
-    parser.add_argument("-g","--generate",
-                        help="generate new keys",
-                        required=False,
-                        default=False,
-                        action="store_true")
+                        default="1234")  # Default pin if none is provided   
     parser.add_argument("-l","--label",
                         help="plaintext label name for the key",
                         required=False,
                         default="default_key_label")  # Default label if none is provided
+    parser.add_argument('-n', '--new-label',
+                        help="The new label for the copied key",
+                        required=False,
+                        default='copied_key')
     parser.add_argument("-k","--key-size",
                         help="size of the key in bits",
                         required=False,
                         type=int,
                         choices=[128, 192, 256],  # Restrict key sizes to 128, 192, or 256
                         default=256)  # Default key size if none is provided
-    parser.add_argument("-t","--token-label",
-                        help="token label to use",
-                        required=False,
-                        default="loadshared accelerator")
     parser.add_argument("-f","--find-token",
                         help="find the token with the given label",
                         required=False,
@@ -95,12 +103,17 @@ def parse_args():
                         required=False,
                         action="store_true",
                         default=False)
+    parser.add_argument("-t","--token-label",
+                        help="token label to use",
+                        required=False,
+                        default="loadshared accelerator")
     parser.add_argument("-a", '--attribute',
                         help="Attribute to apply to the key",
                         required=False,
                         default=[],
                         nargs='+',
-                        action=StoreAttributeAction)  
+                        action=StoreAttributeAction)
+      
      
     args = vars(parser.parse_args())
     return args
@@ -111,9 +124,11 @@ def main():
     token_label = args["token_label"]    
     key_size = args["key_size"]
     key_label = args["label"]
+    new_label = args["new_label"]
     pin = args["pin"]
     slot_label = args["find_slots"]
     attribute = args["attribute"]
+    copy = args["copy"]
     
 
     
@@ -126,6 +141,8 @@ def main():
         delete_key(token_label, key_label,pin )        
     elif args["find_slots"]:
         get_slot(slot_label)
+    elif args["copy"]:
+        key_copy(token_label, copy, key_label, new_label, pin)
         
 # Find all available slots
 def get_slot(slot_label):
@@ -304,6 +321,27 @@ def find_token(token_label):
         sys.exit(f"No token found with label='{token_label}'.")
     except pkcs11.exceptions.MultipleTokensReturned:
         sys.exit(f"Multiple tokens found with label='{token_label}'.")
+
+# Copy a key 
+def key_copy(token_label, copy, key_label, new_label, pin):
+    try:
+        token = lib.get_token(token_label=token_label)
+        with token.open(rw=True, user_pin=pin) as session:
+            key = session.get_key(label=key_label)
+            new = key.copy({pkcs11.Attribute.LABEL: new_label})
+            console = Console()
+            table = Table(show_header=True, header_style="bold red", show_lines=True, title="Key Copied Succesfully:smiley: :", title_style="italic", border_style="green", style="bright", width=100)
+            table.add_column("Token Label")
+            table.add_column("Copied Key Label")
+            table.add_column("New Key Label")
+            table.add_row(token.label, key_label, new_label)
+            console.print(table)
+    except pkcs11.NoSuchKey:
+        sys.exit(f"No key found with label='{key_label}'.")
+    except pkcs11.MultipleObjectsReturned:
+        sys.exit(f"Multiple keys found with label='{key_label}'.")
+    except Exception as e:
+        sys.exit(f"An error occurred while copying the key: {e}")
             
 # Call to main function
 if __name__ == "__main__":
