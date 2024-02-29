@@ -171,6 +171,8 @@ aeskeygen.py -cp -t <token_label> -l <key_label_to_copy> -n <new_label>
 Output:
 ![image-2024-2-28_17-43-55](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/915700be-dd11-459a-945f-7e34660a89bf)
 
+Here we see the copied key listed. 
+![image-2024-2-28_17-44-16](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/1580e471-44d2-4822-bd5d-991ffb64addd)
 
 
 # Advanced Encryption Standard (AES) Encryption/Decryption Script (aes-encryption.py)
@@ -183,7 +185,8 @@ Features
 # Usage: 
 ![image-2024-2-14_18-10-30](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/11bb8230-ecfd-4627-bb7f-3db545ff6ec7)
 
-![image-2024-2-28_17-44-16](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/13a6fa5b-0283-4875-83ba-52c737eabde7)
+
+
 
 aes-encrypt.py -h
 
@@ -241,7 +244,7 @@ for chunk in key.encrypt(chunks,
 output.write(chunk)
 
 
- 2. Initialization Vectors or IV's must always be used for encryption/decryption.
+ 2. Initialization Vectors or IVs must always be used for encryption/decryption.
     - A challenging part of decryption was that I could not generate another random IV to decrypt the file.    
     - You will always need to read the IV you set for the encrypted file to decrypt the file with the key. A different IV will result in a pkcs11.Exception error MechanismParamInvalid.
     - If you use a 128-bit IV that will equal 16 bytes reading the IV from the encrypted file will look something like this:
@@ -254,9 +257,9 @@ From API ref:
 
 An initialization vector (IV) or starting variable (SV) is data that is used by several modes to randomize the encryption and hence to produce distinct ciphertexts even if the same plaintext is encrypted multiple times.
 
-An initialization vector has different security requirements than a key, so the IV usually does not need to be secret. However, in most cases, it is important that an initialization vector is never reused under the same key. For CBC and CFB, reusing an IV leaks some information about the first block of plaintext, and about any common prefix shared by the two messages. For OFB and CTR, reusing an IV completely destroys security.
+An initialization vector has different security requirements than a key, so the IV usually does not need to be secret. However, in most cases, an initialization vector must be never reused under the same key. For CBC and CFB, reusing an IV leaks some information about the first block of plaintext, and about any common prefix shared by the two messages. For OFB and CTR, reusing an IV destroys security.
 
-In CBC mode, the IV must, in addition, be unpredictable at encryption time; in particular, the (previously) common practice of re-using the last ciphertext block of a message as the IV for the next message is insecure.
+In CBC mode, the IV must also be unpredictable at encryption time; in particular, the (previously) common practice of re-using the last ciphertext block of a message as the IV for the next message is insecure.
 
 We recommend using pkcs11.Session.generate_random() to create a quality IV.
 
