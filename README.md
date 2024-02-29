@@ -17,19 +17,20 @@ Integrating PKCS #11 with HSMs has proven invaluable for a wide range of applica
 
 
 
-Prereqs
+# Prereqs
 
-    - Have the latest version of Python (python3)
-    - Download the necessary Python modules
+1. Have the latest version of Python (python3)
+2. Download the necessary Python modules
      -Run pip install python and pip install python-pkcs11
-    - Enable the following variables on your /opt/nfast/cknfastrc file
-        CKNFAST_FAKE_ACCELERATOR_LOGIN = 1
-        CKNFAST_LOADSHARING = 1
-        CKNFAST_DEBUG=10
-        CKNFAST_DEBUGFILE= /opt/nfast/pkcs11.log
-        CKNFAST_OVERRIDE_SECURITY_ASSURANCES=all 
-           * Enable PKCS#11 Debug logs only if troubleshooting or if you want to see the interaction between the HSM and API.
-            The directory for the debug file is arbitrary; place it where your heart feels like (heart) slightly smiling face.
+3. Enable the following variables on your /opt/nfast/cknfastrc file
+   - CKNFAST_FAKE_ACCELERATOR_LOGIN = 1
+       - CKNFAST_LOADSHARING = 1
+       - CKNFAST_DEBUG=10
+       - CKNFAST_DEBUGFILE= /opt/nfast/pkcs11.log
+       - CKNFAST_OVERRIDE_SECURITY_ASSURANCES=all 
+
+4. Enable PKCS#11 Debug logs only if troubleshooting or if you want to see the interaction between the HSM and API.
+  - The directory for the debug file is arbitrary; place it where your heart feels like (heart) slightly smiling face.
 
 
 
