@@ -7,8 +7,7 @@ import os
 from rich import print
 from rich.table import Table
 from rich.console import Console
-from rich.console import Console
-from rich.table import Table
+
  
  
 # Setup Configuration
