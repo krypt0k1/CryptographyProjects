@@ -163,6 +163,13 @@ Output:
 
 ![image-2024-2-7_7-34-54](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/695152ad-3c17-42ae-9b71-b5246284960a)
 
+# 5. Copy keys
+
+Usage:
+aeskeygen.py -cp -t <token_label> -l <key_label_to_copy> -n <new_label> 
+
+Output:
+![image-2024-2-28_17-43-55](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/915700be-dd11-459a-945f-7e34660a89bf)
 
 
 
@@ -176,6 +183,7 @@ Features
 # Usage: 
 ![image-2024-2-14_18-10-30](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/11bb8230-ecfd-4627-bb7f-3db545ff6ec7)
 
+![image-2024-2-28_17-44-16](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/13a6fa5b-0283-4875-83ba-52c737eabde7)
 
 aes-encrypt.py -h
 
