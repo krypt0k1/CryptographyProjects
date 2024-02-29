@@ -121,11 +121,11 @@ Output:
 
    AES Key Size Reference:
 
-128-bit AES key /8 = 16 bytes
+- 128-bit AES key /8 = 16 bytes
 
-192-bit AES key /8 = 24 bytes
+- 192-bit AES key /8 = 24 bytes
 
-256-bit AES key /8 = 32 bytes. 
+- 256-bit AES key /8 = 32 bytes. 
 
 # 1a. Create a Key with Custom Attributes. 
 
