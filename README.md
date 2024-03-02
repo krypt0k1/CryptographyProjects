@@ -114,7 +114,7 @@ aeskeygen.py --generate --token-label 'loadshared accelerator' --pin 1234 --labe
 
 aeskeygen.py -g -t 'loadshared accelerator' -p 1234 -l new_key 22 -k 256 (short-argument)
 
-Output:
+
 
 ![image-2024-2-7_8-6-31](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/96a83bfb-aa74-40cf-a096-5a366d03cbe5)
 
@@ -139,7 +139,7 @@ aeskeygen.py --delete --label my_key --token-label 'loadshared accelerator'  (ve
 
 aeskeygen.py -d -l my_key t 'loadshared accelerator' (short-argument)
 
-Output:
+
 
 ![image-2024-2-7_7-31-23](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/b39b56af-bf21-42d3-9aa9-a5fa7c6a3b8f)
 
@@ -149,7 +149,7 @@ aeskeygen.py --find-token --token-label 'loadshared accelerator'
 
 aeskeygen.py -f -t 'loadshared accelerator' 
 
-Output:
+
 ![image-2024-2-6_23-1-14](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/5531c06a-982f-4a63-a848-baf529e4ddd4)
 
 
@@ -160,7 +160,7 @@ aeskeygen.py --find-slots (verbose)
 aeskeygen.py -s  (short-argument)
 
 
-Output:
+
 
 ![image-2024-2-7_7-34-54](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/695152ad-3c17-42ae-9b71-b5246284960a)
 
@@ -169,7 +169,7 @@ Output:
 Usage:
 aeskeygen.py -cp -t <token_label> -l <key_label_to_copy> -n <new_label> 
 
-Output:
+
 ![image-2024-2-28_17-43-55](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/915700be-dd11-459a-945f-7e34660a89bf)
 
 Here we see the copied key listed. 
@@ -198,7 +198,7 @@ For our example, we will be encrypting a txt file named 'encrypt_me.txt' which w
 
 aes-encryption.py -e -k new_key -t 'loadshared accelerator' -o /home/administrator/Desktop/decrypted.txt -i /home/administrator/Desktop/encrypted.txt 
 
-Output:
+
 
 ![image-2024-2-14_18-18-10](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/3cf500ff-cb80-4f73-a138-a2887b7c660e)
 
@@ -216,7 +216,7 @@ To decrypt execute:
 aes-encryption.py" -d -k new_key -t 'loadshared accelerator' -i /home/administrator/Desktop/encrypted.txt -o /home/administrator/Desktop/decrypted.txt
 
 
-Output: 
+ 
 ![image-2024-2-14_18-22-45-1](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/d433ed76-8025-4bec-ab6f-23305c348f63)
 
 
@@ -232,7 +232,7 @@ Limitations and other notes.
 
 '''python
 buffer_size = 8192
-with open(file_in, 'rb') as input, open(file_out, 'wb') as output:
+with open(file_in, 'rb') as input, open(file_out, 'wb') as 
 #A generator yielding chunks of the file 
 chunks = iter(lambda: input.read(buffer_size), '') 
 for chunk in key.encrypt(chunks,mechanism_param=iv, buffer_size=buffer_size):                             
