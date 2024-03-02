@@ -1,4 +1,4 @@
-# Public-Key Cryptographic Standards #11 
+![image-2024-3-1_22-27-18](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/f65aa26c-c774-41e6-aaeb-1e2868479368)# Public-Key Cryptographic Standards #11 
 
 
 # Introduction 
@@ -264,6 +264,66 @@ We recommend using pkcs11.Session.generate_random() to create a quality IV.
    3. By default AES_CBC_PAD is used for encryption. 
 
 
+# PKCS#11 Key Manager (keygen.py)# 
+
+Features:
+
+1. Generates AES & RSA Keys (plan to support more soon) 
+2. Deletes any key. 
+3. Copies any key.
+4. List all tokens
+5. Find a token based on the label.
+
+Usage:
+![image-2024-3-1_21-56-11](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/5d18cf85-5aa0-49f0-a1f9-6135bc3ac887)
+
+# 1 . Generating RSA, AES & EC keys. 
+
+keygen.py --generate --token-label 'loadshared accelerator' --algorithm RSA --key-size 4096 --label new_RSA_key
+
+keygen.py --generate --token-label 'loadshared accelerator' --algorithm AES --key-size 245 --label new_AES_key
+
+keygen.py --generate --token-label 'loadshared accelerator' --algorithm EC --curve sp --label new_AES_key
+
+
+
+
+AES:
+![image-2024-3-1_22-2-9](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/2322167c-9d91-42fa-aff3-f3f86cf8e3c3)
+
+
+RSA:
+
+![image-2024-3-1_22-6-49](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/1917e3fa-a9ce-48ec-ac8e-fc8cf9b02ac3)
+
+
+EC:
+
+![image-2024-3-1_23-46-16](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/1aa76427-12b5-4937-8719-ac645663994c)
+
+
+
+
+# 2. Copying keys 
+
+keygen.py --copy --label new_AES_key --new-label new_key_2
+
+
+![image-2024-3-1_22-17-3](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/a847cbb4-34a7-4e3c-a4af-c5987b08cadb)
+
+# 3. Deleting keys
+
+keygen.py --delete --label new_key_2 --token-label 'loadshared accelerator'
+
+![image-2024-3-1_22-27-18](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/881d461d-1b6b-4fb0-8db7-91537143071b)
+
+
+
+# 4. List all slots
+
+keygen.py --list-slots
+
+![image-2024-3-1_22-19-27](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/eef9225d-ff54-4c65-b79f-8e9a4ded5ab7)
 
 
 
