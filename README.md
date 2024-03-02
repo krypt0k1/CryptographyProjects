@@ -1,4 +1,4 @@
-![image-2024-3-1_22-27-18](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/f65aa26c-c774-41e6-aaeb-1e2868479368)# Public-Key Cryptographic Standards #11 
+# Public-Key Cryptographic Standards #11 
 
 
 # Introduction 
@@ -27,7 +27,7 @@ Integrating PKCS #11 with HSMs has proven invaluable for a wide range of applica
        - CKNFAST_LOADSHARING = 1
        - CKNFAST_DEBUG=10
        - CKNFAST_DEBUGFILE= /opt/nfast/pkcs11.log
-       - CKNFAST_OVERRIDE_SECURITY_ASSURANCES=all 
+       - CKNFAST_OVERRIDE_SECURITY_ASSURANCES=all ( not required but may be necessary for some operations such as insecure algorithms and wrapping/unwrapping mechanisms)
 
 4. Enable PKCS#11 Debug logs only if troubleshooting or if you want to see the interaction between the HSM and API.
   - The directory for the debug file is arbitrary; place it where your heart feels like (heart) slightly smiling face.
@@ -283,7 +283,7 @@ keygen.py --generate --token-label 'loadshared accelerator' --algorithm RSA --ke
 
 keygen.py --generate --token-label 'loadshared accelerator' --algorithm AES --key-size 245 --label new_AES_key
 
-keygen.py --generate --token-label 'loadshared accelerator' --algorithm EC --curve sp --label new_AES_key
+keygen.py --generate --token-label 'loadshared accelerator' --algorithm EC --curve secp256r1 --label new_EC_key
 
 
 
