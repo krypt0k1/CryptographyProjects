@@ -44,7 +44,7 @@ class StoreAttributeAction(argparse.Action):
 # Define arguments.
 def parse_args():
     """
-    Parse command line arguments for the AES key generator.
+    Parse command line arguments for the key manager.
  
     Returns:
         dict: A dictionary containing the parsed arguments.
