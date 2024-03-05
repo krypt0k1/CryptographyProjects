@@ -276,10 +276,7 @@ private_rsa_key_template = {pkcs11.Attribute.TOKEN: "TOKEN",
                            
                      
              }
- 
-# ECDSA Key Template
- 
- 
+
  
 # Grab parse for attribute values.
 args = parse_args()      
