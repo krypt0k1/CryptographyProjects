@@ -72,6 +72,36 @@ def parse_args():
                         required=False,
                         default=False,
                         action="store_true")
+    parser.add_argument("-s', '--sign",
+                        help="Sign data with the given with the given key label",
+                        required=False,
+                        default=False,
+                        action="store_true")
+    parser.add_argument("-v", "--verify",
+                        help="Verify data with the given with the given key label",
+                        required=False,
+                        default=False,
+                        action="store_true")
+    parser.add_argument("-enc", "--encrypt",
+                        help="Encrypt data with the given with the given key label",
+                        required=False,
+                        default=False,
+                        action="store_true")
+    parser.add_argument("-dec", "--decrypt",
+                        help="Decrypt data with the given with the given key label",
+                        required=False,
+                        default=False,
+                        action="store_true")
+    parser.add_argument("-wra", "--wrap",
+                        help="Wrap data with the given with the given key label",
+                        required=False,
+                        default=False,
+                        action="store_true")
+    parser.add_argument("-unw", "--unwrap",
+                        help="Unwrap data with the given with the given key label",
+                        required=False,
+                        default=False,
+                        action="store_true")
     parser.add_argument('-cp', '--copy',
                         help="Copy the key with the given label",
                         required=False,
@@ -103,24 +133,24 @@ def parse_args():
                         required=False,
                         type=int,
                         choices=[128, 192, 256, 2048, 4096],  # ignore
-                        default=False)  # Default key size if none is provided
+                        default=False)  
     parser.add_argument('-c', '--curve-name',
                         help="The curve name for the key",
                         required=False,
                         type=str,
                         choices=['secp256r1','secp384r1','secp521r1','secp256k1','brainpoolP256r1','brainpoolP384r1','brainpoolP512r1'], 
-                        default=False)  # Default curve name if none is provided
+                        default=False) 
     parser.add_argument('-prime', '--prime',
                         help="The prime number for the key",
                         required=False,
-                        choices =[1024,2048, 3072, 4096],
+                        choices =[1024,2048],
                         default=False)
     parser.add_argument("-f", "--find-token",
                         help="find the token with the given label",
                         required=False,
                         action="store_true",
                         default=False)
-    parser.add_argument("-ls", "--list-slots",
+    parser.add_argument("-l", "--list-slots",
                         help="find the slot with the given label",
                         required=False,
                         action="store_true",
@@ -139,6 +169,12 @@ def parse_args():
                                  "3DES", "X25519", "X448", "ED25519", "ECDH", "ECMQV", "ECIES", "ECDSA", "RSA", "DSA",
                                  "DH"},
                         default="AES")
+    parser.add_argument("-ls, --list-keys",
+                        help="List all keys",
+                        required=False,
+                        default=False,
+                        action="store_true")
+    
  
     args = vars(parser.parse_args())
     return args
@@ -154,10 +190,8 @@ def main():
     key_label = args["label"]
     new_label = args["new_label"]
     pin = args["pin"]
-    slot_label = args["list_slots"]
-    #attribute = args["attribute"]
+    slot_label = args["list_slots"]   
     copy = args["copy"]
-   # delete = args["delete"]
     algorithm = args["algorithm"]
     curve = args["curve_name"]
      
@@ -192,8 +226,8 @@ def find_token(token_label):
         table.show_lines = True
         table.add_column("Token Label")
         table.add_column("Manufacturer ID")
-        #table.add_column("Model")
-        #table.add_column("Serial Number")
+        table.add_column("Model")
+        table.add_column("Serial Number")
  
         # Add a row to the table for the token
         table.add_row(token.label, token.manufacturer_id, token.model, token.serial_number)
@@ -211,10 +245,18 @@ def find_token(token_label):
 def get_slot(slot_label):
     try:
         slot = lib.get_slots(token_present=True)
+        token = slot.get_token()
         # Format the slot list for printing
         slot_list = [str(s) for s in slot]   
         table = Table(show_header=True, header_style="red", show_lines=True, title="Slots information")
         table.add_column("Available Slots :smiley:", style="bright", width=45, justify="center")  # Added emoji smiley face
+        table.add_column("Slot Number", style="dim", width=20, justify="center")
+        table.add_column("Slot Label", style="dim", width=20, justify="center")
+        table.add_column("Slot Manufacturer", style="dim", width=20, justify="center")
+        table.add_column("Slot Description", style="dim", width=20, justify="center")
+        table.add_column("Slot Version", style="dim", width=20, justify="center")
+
+        table.add_row((token.label, token.manufacturer_id, token.model, token.serial_number))
         table.title_style = "italic"
         table.title = "Slot information"
         table.border_style= "green"
@@ -658,6 +700,24 @@ def delete_key(token_label, key_label, pin):
         sys.exit(f"Multiple keys found with label='{key_label}'.")
     except Exception as e:
         sys.exit(f"An error occurred while deleting the key: {e}")
+
+
+ # Sign a message with a key
+
+def sign_data(token_label, key_label, pin, data):
+    try:
+        token = lib.get_token(token_label=token_label)
+        data = open(file_path, 'rb').read()
+        with token.open(rw=True, user_pin=pin) as session:
+            key = session.get_key(label=key_label)
+            signature = key.sign(data)
+            return signature
+    except pkcs11.NoSuchKey:
+        sys.exit(f"No key found with label='{key_label}'.")
+    except pkcs11.MultipleObjectsReturned:
+        sys.exit(f"Multiple keys found with label='{key_label}'.")
+    except Exception as e:
+        sys.exit(f"An error occurred while signing the data: {e}")       
              
 # Call to main function
 if __name__ == "__main__":
