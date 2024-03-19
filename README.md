@@ -16,31 +16,9 @@ The knowledge of cryptography is a linchpin of ineffective cybersecurity strateg
 
 
 
-
-# Integrations with a Hardware Security Module:
-
-
-1. Active Directory Certificate Services and OCSP
-2. Active Directory Federation Services 
-3. Microsoft Internet Information Services (IIS) 
-4. HTTP Apache Server & PKCS #11 Integration
-
-# Application Interface (API)
-
-
-# Code Signer
-
-
-# File Integrity Checker
-
-
-# Implementing a VPN
-
-
-# Password Manager
-
-
-
+# PKCS #11 Projects # 
+1 . PKCS#11 Key Manager
+   - [KeyManager](https://github.com/krypt0k1/CryptographyProjects/blob/main/keymanager.py) is a comprehensive tool for managing PKCS#11 objects within Hardware Security Modules. It supports the creation, copying, deletion, and listing of keys for a variety of algorithms including AES, RSA, EC & EC Edwards, 3DES, and DSA within any token-ready slot. Leverages the Cryptoki API for enhanced data security operations like encryption/decryption, signing/verification, and key wrapping/unwrapping. This tool is integral for ensuring the authenticity, integrity, and availability of data. alongside streamlining secure key storage within databases such as MongoDB and CockroachDB for key life cycle management.
 
 
 
