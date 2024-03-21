@@ -10,7 +10,7 @@ from pkcs11 import Mechanism, ObjectClass, lib, TokenNotPresent, NoSuchKey, KeyT
 from pkcs11.util.ec import encode_named_curve_parameters
 from pkcs11.util.rsa import encode_rsa_public_key, decode_rsa_public_key, decode_rsa_private_key
 from pkcs11.util.dsa import encode_dsa_domain_parameters, decode_dsa_domain_parameters, encode_dsa_public_key, encode_dsa_signature, decode_dsa_public_key, decode_dsa_signature
-import os
+
  
  
   
@@ -155,6 +155,10 @@ def parse_args():
                         help="The new label for the copied key",
                         required=False,
                         default='copied_key')
+    parser.add_argument("-ktw", "--key-to-wrap",
+                        help="The key to wrap",
+                        required=False,
+                        default=False)
     parser.add_argument("-k", "--key-size",
                         help="size of the key in bits",
                         required=False,
@@ -201,6 +205,27 @@ def parse_args():
                                  "3DES", "X25519", "X448", "ED25519", "ECDH", "ECMQV", "ECIES", "ECDSA", "RSA", "DSA",
                                  "DH"},
                         default="AES")
+    parser.add_argument('-m', '--mechanism',
+                        help= "The mechanism to use for the operation, if not provided, a default mechanism will be used based on the algorithm",
+                        choices = {"AES_KEY_WRAP_PAD", "AES_KEY_WRAP","AES_CBC_PAD", 
+                                   "AES_CBC_ENCRYPT_DATA", "AES_ECB", "DES3_CBC_PAD", 
+                                   "RSA_PKCS_OAEP","RSA_PKCS", "RSA_PKCS_OAEP_TPM_1_1", 
+                                   "RSA_PKCS_TPM_1_1",},
+                        required=False,
+                        type=str,)
+    parser.add_argument('-kt', '--key-type',
+                        help="The key type specification for the key to unwrap",
+                        required=False,
+                        type=str,
+                        choices={"AES", "RSA", "EC", "DSA"},
+                        default=False)
+    parser.add_argument('-obj', '--object-class',
+                        help="The object class for the key to unwrap",
+                        required=False,
+                        type=str,
+                        choices={"PUBLIC_KEY", "PRIVATE_KEY", "SECRET_KEY"},
+                        default=False)
+    
  
     
  
@@ -217,6 +242,7 @@ def main():
     key_size = args["key_size"]   
     key_label = args["label"]
     new_label = args["new_label"]
+    key_to_wrap = args["key_to_wrap"]
     pin = args["pin"]
     slot_label = args["list_slots"]    
     algorithm = args["algorithm"]
@@ -225,7 +251,9 @@ def main():
     output_file_path = args["output_path"]
     signature_path = args["signature_path"]
     encrypted_path = args["encrypted_path"]
-    
+    mechanism_type = args["mechanism"]
+    key_type = args["key_type"]
+    object_class = args["object_class"]
     
      
  
@@ -248,13 +276,13 @@ def main():
     elif args["verify"]:
         verify_data(token_label, key_label, algorithm, input_file_path, signature_path)
     elif args["encrypt"]:
-        encrypt_data(token_label, key_label, pin,  algorithm, input_file_path, output_file_path)
+        encrypt_data(token_label, key_label, pin, algorithm, input_file_path, mechanism_type, output_file_path)
     elif args["decrypt"]:
-        decrypt_data(token_label, key_label, encrypted_path, output_file_path, algorithm, pin)
-    #elif args["wrap"]:
-     #   wrap_data(token_label, key_label, file_path, pin) 
-   # elif args["unwrap"]:
-    #    unwrap_data(token_label, key_label, file_path, pin)
+        decrypt_data(token_label, key_label, encrypted_path, output_file_path, algorithm, mechanism_type, pin)
+    elif args["wrap"]:
+        wrap_data(token_label, key_label, key_to_wrap, algorithm, output_file_path, pin) 
+    elif args["unwrap"]:
+       unwrap_data(token_label, key_label, input_file_path, algorithm, new_label, pin)
    # elif args["import"]:
     #    import_key(token_label, key_label, file_path, pin)
    # elif args["export"]:
@@ -498,10 +526,7 @@ def gen_key(token_label, key_label, key_size, aes_template, private_rsa_key_temp
                         sys.exit(f"Multiple keys found with label='{key_label}'.")
  
                 # For DSA, we need to generate a public and private key pair
-                args = parse_args()
-                    #prime = args["prime"]
-                 
- 
+                          
                 parameters = session.generate_domain_parameters(pkcs11.KeyType.DSA, 1024)
                 public_DSA, private_DSA = parameters.generate_keypair(label=key_label, store=True)
  
@@ -511,19 +536,6 @@ def gen_key(token_label, key_label, key_size, aes_template, private_rsa_key_temp
        lib.reinitialize()
          
      
- 
-# Create and define a table for the key information
-console = Console()
- 
-table = Table(show_header=True, header_style="red", show_lines=True, title="Key Information")
-table.add_column("Attribute", style="dim", width=25, justify="center")
- 
-        # Add a column for the key information
-table.add_column("Value", style="bright", width=20, justify="center")
-table.title_style = "italic"
-table.border_style = "green"
- 
-
     
 # Copy a key 
 def key_copy(token_label, key_label, new_label, pin, algorithm):
@@ -614,7 +626,7 @@ def sign_data(token_label, key_label, input_file_path, signature_path, algorithm
         
           elif algorithm in ["RSA", "DSA", "ECDSA"]:
             private_key = session.get_key(object_class=pkcs11.constants.ObjectClass.PRIVATE_KEY, label=key_label)
-            signature = private_key.sign(data)
+            signature = private_key.sign(data) # Add functionality to allow user to choose the mechanism or use a default one if none is given based on the algorith type.
             print(f'File successfully signed: {signature.hex()} (in hex format)')    
         
         with open(signature_path, 'wb') as sig_file:
@@ -668,76 +680,124 @@ def verify_data(token_label, key_label, algorithm, input_file_path, signature_pa
     
 # Encrypt a data with a key
 
-def encrypt_data(token_label, key_label, pin, algorithm, input_file_path, output_file_path):
+MECHANISM_MAP = {
+    "AES_CBC_PAD": {"mechanism": pkcs11.Mechanism.AES_CBC_PAD},
+    "AES_CBC_ENCRYPT_DATA": {"mechanism": pkcs11.Mechanism.AES_CBC_ENCRYPT_DATA},
+    "DES3_CBC_PAD": {"mechanism": pkcs11.Mechanism.DES3_CBC_PAD},
+    "RSA_PKCS_OAEP": {"mechanism": pkcs11.Mechanism.RSA_PKCS_OAEP},
+    "RSA_PKCS": {"mechanism": pkcs11.Mechanism.RSA_PKCS},
+    "RSA_PKCS_OAEP_TPM_1_1": {"mechanism": pkcs11.Mechanism.RSA_PKCS_OAEP_TPM_1_1},
+    "RSA_PKCS_TPM_1_1": {   "mechanism": pkcs11.Mechanism.RSA_PKCS_TPM_1_1},
+    
+    # The algorithm names as keys, mapping to their default mechanisms
+    "AES": {"default_mechanism": pkcs11.Mechanism.AES_CBC_PAD},
+    "3DES": {"default_mechanism": pkcs11.Mechanism.DES3_CBC_PAD},
+    "RSA": {"default_mechanism": pkcs11.Mechanism.RSA_PKCS_OAEP},
+    # Add more mappings for other algorithms as necessary
+}
+
+def encrypt_data(token_label, key_label, pin, algorithm, input_file_path, mechanism_type, output_file_path):
     try:
         token = lib.get_token(token_label=token_label)
-        
-        with token.open(rw=True, user_pin=pin) as session:  
-            input_file = input_file_path
-            output_file = output_file_path 
-                  
+        with token.open(rw=True, user_pin=pin) as session:
+            # Direct mapping to default mechanism if none provided
+            if mechanism_type is None:
+                if algorithm not in MECHANISM_MAP:
+                    raise ValueError(f"Unsupported algorithm: {algorithm}")
+                mechanism_info = MECHANISM_MAP[algorithm]
+                mechanism = mechanism_info["default_mechanism"]
+            else:
+                # Validate and use the provided mechanism
+                mechanism_key = mechanism_type
+                if mechanism_key not in MECHANISM_MAP:
+                    raise ValueError(f"Invalid mechanism: {mechanism_type}")
+                mechanism = MECHANISM_MAP[mechanism_key]["mechanism"]
+            
+            # Perform encryption
             if algorithm in ["AES", "3DES"]:
-
-             iv = session.generate_random(128)
-             key = session.get_key(label=key_label)
-        
-        
-        # Encrypt the file contents and output it to a file.
-             buffer_size = 8192          
-             
-             with open(input_file, "rb") as input, open(output_file, "wb") as output:
-          
-                  chunks = iter(lambda: input.read(buffer_size), b'')
-            
-                  for chunk in key.encrypt(chunks, mechanism_param =iv, buffer_size=buffer_size):
-                    output.write(chunk)
-                    encrypt_confirmation(token, input_file, output_file, key_label)
+                # Symmetric encryption
+                iv = session.generate_random(128)  # Adjust the IV size as needed
+                key = session.get_key(label=key_label)
                 
-         
-                    
-            
-            if algorithm in ["RSA"]:
-                    key = session.get_key(object_class=pkcs11.constants.ObjectClass.PUBLIC_KEY, label=key_label)
+                
+                with open(input_file_path, "rb") as input_file, open(output_file_path, "wb") as output_file:
+                    data = input_file.read()
+                    encrypted_data = key.encrypt(data, mechanism=mechanism, mechanism_param=iv)
+                    output_file.write(iv + encrypted_data) # The IV is appended to the encrypted data, it is safe to store the IV in cleartext and required for decryption.
 
-                    # Encrypt the file contents and output it to a file.
-                    with open(input_file, "rb") as input, open(output_file, "wb") as output_file:
-                        plaintext = input.read()
-                        ciphertext = key.encrypt(plaintext)
-                        output_file.write(ciphertext)                        
-                    encrypt_confirmation(token, str(input_file), output_file, key_label)
-                        
-                        
-    except pkcs11.NoSuchKey:
-                logger.error(f"No key found with label='{key_label}'.")
-    
-    except Exception as e:
-                logger.exception(f"An error occurred while encrypting the file: {e}")
-            
+            elif algorithm in ["RSA"]:
+                # Asymmetric encryption
+                key = session.get_key(object_class=pkcs11.constants.ObjectClass.PUBLIC_KEY, label=key_label)
+                
+                with open(input_file_path, "rb") as input_file, open(output_file_path, "wb") as output_file:
+                    data = input_file.read()
+                    encrypted_data = key.encrypt(data, mechanism=mechanism)
+                    output_file.write(encrypted_data) 
 
-def decrypt_data(token_label, key_label, encrypted_path, output_file_path, algorithm, pin):
+            else:
+                raise ValueError(f"Unsupported algorithm: {algorithm}")
+            
+            # Confirm encryption
+            encrypt_confirmation(token, input_file_path, output_file_path, key_label, mechanism)
+
+    except pkcs11.exceptions.NoSuchKey:
+        print("Key not found")
+    except pkcs11.exceptions.NoSuchToken:
+        print("Token not found")
+    except pkcs11.exceptions.PinIncorrect:
+        print("Incorrect PIN")
+    except pkcs11.exceptions.TokenNotPresent:
+        print("Token not present")
+    except pkcs11.exceptions.FunctionFailed:
+        print("Function failed")
+    except pkcs11.exceptions.PKCS11Error:
+        print("PKCS11 Error")
+
+
+
+def decrypt_data(token_label, key_label, encrypted_path, output_file_path, algorithm, mechanism_type, pin):
     try: 
         token = lib.get_token(token_label=token_label)
+        # Open a Session. 
         with token.open(rw=True, user_pin = pin) as session:
+            if mechanism_type is None:
+                if algorithm not in MECHANISM_MAP:
+                    raise ValueError(f"Unsupported algorithm: {algorithm}")
+                mechanism_info = MECHANISM_MAP[algorithm]
+                mechanism = mechanism_info["default_mechanism"]
+            else:
+                # Validate and use the provided mechanism
+                mechanism_key = mechanism_type
+                if mechanism_key not in MECHANISM_MAP:
+                    raise ValueError(f"Invalid mechanism: {mechanism_type}")
+                mechanism = MECHANISM_MAP[mechanism_key]["mechanism"]
+         
             if algorithm in ["AES", "3DES"]:    
-                with open(encrypted_path, "rb") as encrypted_file:            
-                    iv = session.generate_random(128)
-                    ciphertext = encrypted_file.read()
-                    
-                    # find key
+                with open(encrypted_path, "rb") as encrypted_file: 
+                    # Read the IV from the file.            
+                    iv = encrypted_file.read(16)
+                    # Read the file and prep it for decryption. 
+                    ciphertext = encrypted_file.read()                  
+                                        
+                    # Find the key to decrypt with.
                     key = session.get_key(label=key_label)
-                    # decrypt data using key. 
-                    plaintext = key.decrypt(ciphertext, mechanism_param=iv)
-                    # write decrypted data to file.
+                    # Decrypt data using key. 
+                    plaintext = key.decrypt(ciphertext, mechanism=mechanism, mechanism_param=iv, buffer_size=8192)
+                    # Write decrypted data to file.
                 with open(output_file_path, "wb") as decrypted_file:
                     decrypted_file.write(plaintext)
                     decrypt_confirmation(token, key_label, encrypted_path, output_file_path)
                         
             elif algorithm in ["RSA"]:
+                # Find key
                 key = session.get_key(object_class=pkcs11.constants.ObjectClass.PRIVATE_KEY, label=key_label)
+                # Open encrypted file and read it.
                 with open(encrypted_path, "rb") as encrypted_file:
-                    ciphertext = encrypted_file.read()
+                    
+                    ciphertext = encrypted_file.read()  
+                    # Decrypt data using key.                  
                     plaintext = key.decrypt(ciphertext)
-                
+                # Write data to file.
                 with open(output_file_path, "wb") as decrypted_file:
                     decrypted_file.write(plaintext)
                     decrypt_confirmation(token, key_label, encrypted_path, output_file_path)
@@ -748,20 +808,106 @@ def decrypt_data(token_label, key_label, encrypted_path, output_file_path, algor
         print("Function failed")
     except Exception as e:
         print(f"An error occurred while decrypting the file: {e}")
-                        
+
+def wrap_data(token_label, key_label, key_to_wrap, algorithm, output_file_path, pin):
+    try:  
+        token = lib.get_token(token_label = token_label)
+        with token.open(rw=True, user_pin=pin) as session:
+            if algorithm in ["AES", "3DES"]: # 3DES IS CONSIDERED INSECURE USE AES WHERE POSSIBLE
+                wrapping_key = session.get_key(label=key_label)
+                wrapped_key = session.get_key(label=key_to_wrap)
+                crypttext = wrapping_key.wrap_key(wrapped_key, mechanism =None,mechanism_param=None)  
+            
+                with open(output_file_path, "wb") as wrapped_file:
+                 wrapped_file.write(crypttext)
+                 wrap_confirmation(token, key_label, key_to_wrap, output_file_path)
+            
+            if algorithm in ["RSA"]:
+                wrapping_key = session.get_key(object_class=pkcs11.constants.ObjectClass.PUBLIC_KEY, label=key_label)
+                wrapped_key = session.get_key(label=key_to_wrap)
+                crypttext = wrapping_key.wrap_key(wrapped_key, mechanism=None, mechanism_param=None) # Remember to add functionality to allow user to specify mechanism and mechanism_param. 
+            
+                with open(output_file_path, "wb") as wrapped_file:
+                 wrapped_file.write(crypttext)
+                 wrap_confirmation(token, key_label, key_to_wrap, output_file_path)
+                
+    except pkcs11.NoSuchKey:
+        print(f"No key found with label='{key_label}'.")
+    except pkcs11.exceptions.FunctionFailed:
+        print("Wrapping function failed")
+    except pkcs11.exceptions.KeyHandleInvalid:
+        print("Key handle invalid, you may be trying to wrap a key with WRAP_WITH_TRUSTED using an untrusted key")
+    except pkcs11.exceptions.KeyNotWrappable:
+        print("Key not wrappable")
+    except pkcs11.exceptions.KeyUnextractable:
+        print("Key unextractable")
+
+def unwrap_data(token_label, key_label, input_file_path, algorithm, new_label, pin):
+    try: 
+        token = lib.get_token(token_label = token_label)
+        with token.open(rw=True, user_pin=pin) as session:
+                wrapping_key = session.get_key(label=key_label)
+                with open(input_file_path, "rb") as wrapped_file:
+                 crypttext = wrapped_file.read()
+                 
+                if algorithm in ["AES", "3DES"]:
+                    unwrapped_key = wrapping_key.unwrap_key(object_class = ObjectClass.SECRET_KEY, key_type = KeyType.AES, 
+                                                        mechanism= Mechanism.AES_KEY_WRAP, 
+                                                        mechanism_param=None, 
+                                                        key_data = crypttext,
+                                                        label=new_label, 
+                                                        store=True,
+                                                        template= {Attribute.SENSITIVE: True, Attribute.EXTRACTABLE: False, Attribute.WRAP_WITH_TRUSTED: True,
+                                                                   Attribute.ENCRYPT: True, Attribute.DECRYPT: True, Attribute.WRAP: True, Attribute.UNWRAP: True, Attribute.SIGN: True, Attribute.VERIFY: True})
+                    
+                    unwrap_confirmation(token, key_label, input_file_path, unwrapped_key)
+                    
+    except pkcs11.NoSuchKey:
+        print(f'No key found with label={key_label}.')
+    except pkcs11.exceptions.FunctionFailed:
+        print("Function failed")
+    except pkcs11.exceptions.UnwrappingKeyHandleInvalid:
+        print("Unwrapping key handle invalid")
+    except pkcs11.exceptions.UnwrappingKeySizeRange:
+        print("Unwrapping key size range")
     
     
-## Printing Functions ###
+                                        ######## Printing Functions ##########
+                                        
+# For wrap_data function
+def wrap_confirmation(token, key_label, key_to_wrap, output_file_path):
+    table = Table(show_header=True, header_style="bold red", show_lines=True, title=":thumbs_up: Key Wrapped:  ", title_style="Bold", border_style="green", style="bright", width=150)
+    table.add_column("Token Label")
+    table.add_column("Wrapping Key Label")
+    table.add_column("Key to Wrap")
+    table.add_column("Wrapped Key Material File")
+    table.add_row(token.label, key_label, key_to_wrap, output_file_path)
+            
+    console = Console()
+    console.print(table)                                        
  
+ 
+# For unwrap_data function
+def unwrap_confirmation(token, key_label, input_file_path, unwrapped_key):
+    table = Table(show_header=True, header_style="bold red", show_lines=True, title=":thumbs_up: Key Unwrapped:  ", title_style="Bold", border_style="green", style="bright", width=150)
+    table.add_column("Token Label")
+    table.add_column("Wrapping Key Label")
+    table.add_column("Wrapped Key Material File")
+    table.add_column("Unwrapped Key Label")
+    table.add_row(token.label, key_label, input_file_path, unwrapped_key.label)
+            
+    console = Console()
+    console.print(table) 
  # For encrypt_data function 
  
-def encrypt_confirmation(token, input_file, output_file, key_label):
+def encrypt_confirmation(token, input_file, output_file, key_label, mechanism):
     table = Table(show_header=True, header_style="bold red", show_lines=True, title=":thumbs_up: File Encrypted:  ", title_style="Bold", border_style="green", style="bright", width=150)
     table.add_column("Token Label")
     table.add_column("File to encrypt")
     table.add_column("Encrypted File")
     table.add_column("Key Label")
-    table.add_row(token.label, str(input_file), str(output_file), key_label)
+    table.add_column("Mechanism")
+    table.add_row(token.label, str(input_file), str(output_file), key_label, mechanism.name)
             
     console = Console()
     console.print(table) 
@@ -1030,11 +1176,7 @@ def print_secret_keys(token_label, secret_keys):
     console.print(table)
        
             
-            
-  
-
-
-
+           
 # Call to main function
 if __name__ == "__main__":
     try:
