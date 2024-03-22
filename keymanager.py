@@ -6,6 +6,7 @@ import os
 from rich import print
 from rich.table import Table
 from rich.console import Console
+from rich import box
 from pkcs11 import Mechanism, ObjectClass, lib, TokenNotPresent, NoSuchKey, KeyType, Attribute, MGF
 from pkcs11.util.ec import encode_named_curve_parameters
 from pkcs11.util.rsa import encode_rsa_public_key, decode_rsa_public_key, decode_rsa_private_key
@@ -596,7 +597,7 @@ def delete_key(token_label, key_label, pin):
             key = session.get_key(label=key_label)
             key.destroy() 
             console = Console()
-            table = Table(show_header=True, header_style="bold red", show_lines=True, title=":thumbs_up: Key Deleted:  ", title_style="Bold", border_style="green", style="bright", width=50)
+            table = Table(show_header=True, header_style="dark_green", show_lines=True, title=":thumbs_up: Key Deleted:  ", box = box.ROUNDED, title_style="Bold", border_style="green", style="bright", width=80)
             table.add_column("Token Label")
             table.add_column("Deleted Key Label")
             table.add_row(token.label, key_label)
@@ -621,20 +622,24 @@ def sign_data(token_label, key_label, input_file_path, signature_path, algorithm
           if algorithm in ["AES", "3DES"]: 
             key = session.get_key(label=key_label)
             signature = key.sign(data)
-            
-            print(f'File successfully signed: {signature.hex()} (in hex format)')
-        
+           
+
           elif algorithm in ["RSA", "DSA", "ECDSA"]:
             private_key = session.get_key(object_class=pkcs11.constants.ObjectClass.PRIVATE_KEY, label=key_label)
             signature = private_key.sign(data) # Add functionality to allow user to choose the mechanism or use a default one if none is given based on the algorith type.
-            print(f'File successfully signed: {signature.hex()} (in hex format)')    
         
         with open(signature_path, 'wb') as sig_file:
             sig_file.write(signature)
-            print('Signature written to:'+ signature_path + ' (in byte format)' )
-            
+            signed_data_confirmation(token, key_label, input_file_path, signature_path)
+     
+     # Error handling       
     except pkcs11.NoSuchKey:
         sys.exit(f"No key found with label='{key_label}'.")
+    except pkcs11.MechanismInvalid:
+        sys.exit(f"Invalid mechanism for algorithm '{algorithm}'.")
+    except pkcs11.SessionHandleInvalid:
+        sys.exit("Invalid session handle.")
+        
 
 
 # Verify signed data with a key
@@ -874,9 +879,26 @@ def unwrap_data(token_label, key_label, input_file_path, algorithm, new_label, p
     
                                         ######## Printing Functions ##########
                                         
+# For sign_data function 
+
+def signed_data_confirmation(token, key_label, input_file_path, signature_path):
+    table = Table(show_header=True, header_style="dark_green", show_lines=True, title=":smiley: File Signed:  ", title_style="Regular",
+                     box = box.ROUNDED, border_style="green", style="bright", width=150)
+    table.add_column("Token Label")
+    table.add_column("Key Label")
+    table.add_column("File to Sign")
+    table.add_column("Signature File")
+    table.add_row(token.label, key_label, input_file_path, signature_path)
+    
+    console = Console()
+    console.print(table)
+    
+                                            
+                                        
 # For wrap_data function
 def wrap_confirmation(token, key_label, key_to_wrap, output_file_path):
-    table = Table(show_header=True, header_style="bold red", show_lines=True, title=":thumbs_up: Key Wrapped:  ", title_style="Bold", border_style="green", style="bright", width=150)
+    table = Table(show_header=True, header_style="dark_green", show_lines=True, title=":smiley: Key Wrapped:  ", 
+                  box = box.ROUNDED, title_style="Bold", border_style="bright_black", style="bright", width=150)
     table.add_column("Token Label")
     table.add_column("Wrapping Key Label")
     table.add_column("Key to Wrap")
@@ -889,7 +911,8 @@ def wrap_confirmation(token, key_label, key_to_wrap, output_file_path):
  
 # For unwrap_data function
 def unwrap_confirmation(token, key_label, input_file_path, unwrapped_key):
-    table = Table(show_header=True, header_style="bold red", show_lines=True, title=":thumbs_up: Key Unwrapped:  ", title_style="Bold", border_style="green", style="bright", width=150)
+    table = Table(show_header=True, header_style="dark_green,", box = box.ROUNDED,
+                  show_lines=True, title=":thumbs_up: Key Unwrapped:  ", title_style="Bold", border_style="bright_black", style="bright", width=150)
     table.add_column("Token Label")
     table.add_column("Wrapping Key Label")
     table.add_column("Wrapped Key Material File")
@@ -901,7 +924,8 @@ def unwrap_confirmation(token, key_label, input_file_path, unwrapped_key):
  # For encrypt_data function 
  
 def encrypt_confirmation(token, input_file, output_file, key_label, mechanism):
-    table = Table(show_header=True, header_style="bold red", show_lines=True, title=":thumbs_up: File Encrypted:  ", title_style="Bold", border_style="green", style="bright", width=150)
+    table = Table(show_header=True, header_style="dark_green", show_lines=True, title=":thumbs_up: File Encrypted:  ", 
+                  padding = 1,title_style="Bold", border_style="bright_black", style="bright", width=150, box= box.ROUNDED)
     table.add_column("Token Label")
     table.add_column("File to encrypt")
     table.add_column("Encrypted File")
@@ -914,7 +938,8 @@ def encrypt_confirmation(token, input_file, output_file, key_label, mechanism):
             
 
 def decrypt_confirmation(token, key_label, input_file_path, output_file_path):
-    table = Table(show_header=True, header_style="bold red", show_lines=True, title=":thumbs_up: File Decrypted:  ", title_style="Bold", border_style="green", style="bright", width=150)
+    table = Table(show_header=True, header_style="dark_green", show_lines=True, title=":thumbs_up: File Decrypted:  ",
+                  padding= 1,title_style="Bold", border_style="bright_black", style="bright", width=150, box= box.ROUNDED)
     table.add_column("Token Label")
     table.add_column("File to decrypt")
     table.add_column("Decrypted File")
@@ -928,7 +953,8 @@ def decrypt_confirmation(token, key_label, input_file_path, output_file_path):
 def verification_confirmation_symmetric(verification_result, key):
 
 
- table = Table(show_header=True, header_style="bold",border_style= "green",title="File Verified :thumbs_up:", style="Bold", show_lines=True)
+ table = Table(show_header=True, header_style="dark_green",
+               box = box.ROUNDED, title="File Verified :thumbs_up:", style="Bold", border_style = "green", show_lines=True)
  table.add_column("Signature Verification Result")
  table.add_column("Signed by Secret Key Label") 
  table.add_row(str(verification_result), key.label)
@@ -938,7 +964,8 @@ def verification_confirmation_symmetric(verification_result, key):
  
  # For verify_data function using asymmetric keys
 def verification_confirmation_asymmetric(verification_result, private_key):
-    table = Table(show_header=True, header_style="bold",border_style= "green", style="Bold", show_lines=True)
+    table = Table(show_header=True, header_style="dark_green",box = box.ROUNDED, 
+                  border_style= "green", style="Bold", show_lines=True)
     table.add_column("Signature Verification Result")
     table.add_column("Signed by Public Key Label")
     
@@ -946,19 +973,8 @@ def verification_confirmation_asymmetric(verification_result, private_key):
     console = Console()
     console.print(table)
                 
-# Create and define a table for the key information
-console = Console()
- 
-table = Table(show_header=True, header_style="red", show_lines=True, title="Key Information")
-table.add_column("Attribute", style="dim", width=25, justify="center")
- 
-        # Add a column for the key information
-table.add_column("Value", style="bright", width=20, justify="center")
-table.title_style = "italic"
-table.border_style = "green"
- 
-     
-# Print key information
+
+
 
 
 # print AES info ##
@@ -967,12 +983,12 @@ def print_aes_key_info(key):
 # Create and define a table for the key information
   console = Console()
  
-  table = Table(show_header=True, header_style="red", show_lines=True, title="Key Information")
-  table.add_column("Attribute", style="dim", width=25, justify="center")
+  table = Table(show_header=True, header_style="dark_green", show_lines=True, box = box.ROUNDED, title="Key Information")
+  table.add_column("Attribute", style="bright", width=50, justify="center")
  
         # Add a column for the key information
-  table.add_column("Value", style="bright", width=20, justify="center")
-  table.title_style = "italic"
+  table.add_column("Value", style="bright", width=50, justify="center")
+  table.title_style = "bold"
   table.border_style = "green"
      
   key_info = {
@@ -996,13 +1012,49 @@ def print_aes_key_info(key):
     }       
         
   for attribute, value in key_info.items():
-    table.add_row(attribute, str(value))
-    table.title = "AES Key Information"
+    
+    if attribute == "KEY SIZE":
+        key_size = str(value) + " bits"
+        if value == 32:
+            key_size = "256 bits"
+        elif value == 16:
+            key_size = "128 bits"
+        elif value == 25:
+            key_size = "128 bits"
+        table.add_row(attribute, key_size)
+    if attribute == "KEY TYPE":
+        key_type = str(value) 
+        if value == KeyType.AES:
+            key_type = "AES"
+        if value == KeyType.DES3:
+            key_type = "3DES"
+        if value == KeyType.RSA:
+            key_type = "RSA"
+        if value == KeyType.EC:
+            key_type = "EC"
+        if value == KeyType.DSA:
+            key_type = "DSA"
+        table.add_row(attribute, key_type)
+    else:
+        table.add_row(attribute, str(value))
+    table.title = "AES Key Generated Succesfully!"
+    
   console.print(table)
  
  ## print RSA info ##
  
 def print_rsa_key_info(public, private):
+    
+    # Create a table for the key information
+    
+    console = Console()
+    table = Table(show_header=True, header_style="dark green", show_lines=True, border_style= "green" ,title=" Key Pair Generated Succesfully!")
+    table.add_column("Attribute", style="dim", width=25, justify="center")
+    table.add_column("Value", style="bright", width=20, justify="center")
+    table.title_style = "bold"
+    table.border_style = "bright black"
+    
+    
     public_info = {
         "LABEL": public.__getitem__(pkcs11.Attribute.LABEL),
         "TOKEN": public.__getitem__(pkcs11.Attribute.TOKEN),
@@ -1056,6 +1108,15 @@ def print_rsa_key_info(public, private):
  # Print DSA Key Information
   
 def print_dsa_key_info(public_DSA, private_DSA):
+    # Create a table for the key information
+    console = Console()
+    table = Table(show_header=True, header_style="dark green", show_lines=True, title=" Key Pair Generated Successfully!")
+    table.add_column("Attribute", style="dim", width=25, justify="center")
+    table.add_column("Value", style="bright", width=20, justify="center")
+    table.title_style = "bold"
+    table.border_style = "green"
+    
+    
     public_info = {"LABEL": public_DSA.__getitem__(pkcs11.Attribute.LABEL),
         "TOKEN": public_DSA.__getitem__(pkcs11.Attribute.TOKEN),
         "KEY TYPE": public_DSA.__getitem__(pkcs11.Attribute.KEY_TYPE),
@@ -1099,6 +1160,14 @@ def print_dsa_key_info(public_DSA, private_DSA):
 # Print ECDSA Key Information
 
 def print_ec_info(public, private):
+     # Create a table for the key information
+    console = Console()
+    table = Table(show_header=True, header_style="dark green", show_lines=True, title="Key Information")
+    table.add_column("Attribute", style="dim", width=25, justify="center")
+    table.add_column("Value", style="bright", width=20, justify="center")
+    table.title_style = "italic"
+    table.border_style = "bright black"
+    
 
     public_info = {"LABEL": public.__getitem__(pkcs11.Attribute.LABEL),
         "TOKEN": public.__getitem__(pkcs11.Attribute.TOKEN),
@@ -1131,7 +1200,7 @@ def print_ec_info(public, private):
                 
 def print_key_copy_success(token_label, key_label, new_label):
     console = Console()
-    table = Table(show_header=True, header_style="bold red", show_lines=True, title="Key Copied Successfully:", title_style="italic", border_style="green", style="bright", width=100)
+    table = Table(show_header=True, header_style="dark_green", box = box.ROUNDED, show_lines=True, title="Key Copied Successfully!", title_style="bold", border_style="green", style="bright", width=100)
     table.add_column("Token Label")
     table.add_column("Copied Key Label")
     table.add_column("New Key Label")
@@ -1143,7 +1212,7 @@ def print_key_copy_success(token_label, key_label, new_label):
 
 def print_public_keys(token_label,public_keys):
     console = Console()
-    table = Table(show_header=True, header_style="bold red", show_lines=True, title="Public Keys Found:", title_style="italic", border_style="green", style="bright", width=100)
+    table = Table(show_header=True, header_style="dark_green", box = box.ROUNDED, show_lines=True, title="Public Key Found:", title_style="bold", border_style="green", style="bright", width=100)
     table.add_column("Token Label")
     table.add_column("Key Label")    
     table.add_column("Key Type")
@@ -1154,7 +1223,7 @@ def print_public_keys(token_label,public_keys):
            
 def print_private_keys(token_label, private_keys):
     console = Console()
-    table = Table(show_header=True, header_style="bold red", show_lines=True, title= "Private Keys Found", title_style="italic", border_style="green", style="bright", width=100)
+    table = Table(show_header=True, header_style="dark_green", box = box.ROUNDED, show_lines=True, title= "Private Key Found", title_style="italic", border_style="green", style="bright", width=100)
     table.add_column("Token Label")
     table.add_column("Key Label")
     table.add_column("Key Type")
@@ -1166,17 +1235,21 @@ def print_private_keys(token_label, private_keys):
            
 def print_secret_keys(token_label, secret_keys):
     console = Console()
-    table = Table(show_header=True, header_style="bold red", show_lines=True,  title= "Secret Keys Found", title_style="italic", border_style="green", style="bright", width=100)
+    table = Table(show_header=True, header_style="dark_green", show_lines=True, box = box.ROUNDED, title= "Secret Key Found", title_style="italic", border_style="green", style="bright", width=100)
     table.add_column("Token Label")
     table.add_column("Key Label")    
     table.add_column("Key Type")
     table.add_column("Key Size")
     
-    table.add_row(token_label, secret_keys.label, str(secret_keys.key_type), str(secret_keys.key_length)) 
+    table.add_row(token_label, secret_keys.label, str(secret_keys.key_type), str(secret_keys.key_length + " bits")) 
     console.print(table)
        
             
-           
+            
+  
+
+
+
 # Call to main function
 if __name__ == "__main__":
     try:
