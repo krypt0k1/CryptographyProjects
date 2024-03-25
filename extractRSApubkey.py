@@ -23,7 +23,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='python-pcks11 | Extract Public Key from nShield HSM.',
                                      prog='rsaextractpub.py',
                                      usage='%(prog)s rsaextractpub.py [options]',
-                                     epilog="Example: %(prog)s --extract --token-label 'loadshared accelerator' --label 'my_key'",
+                                     epilog="Example: %(prog)s --extract --token-label 'loadshared accelerator' --label my_key --output public_key.txt ",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      add_help=True)
     parser.add_argument('-e', '--extract',
