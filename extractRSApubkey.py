@@ -54,20 +54,11 @@ def parse_args():
     
     return args
 
-
-
 # Main function.
 def main():
     args = parse_args()  # Parse the arguments
-    if args.import_key: # Direct attribute access
-        import_key(args)
-    if args.extract:  # Direct attribute access
-        export_key(args)
-    
-def export_key(args):
-        
-        lib = pkcs11.lib(LIB)
-        token = lib.get_token(token_label=args.token_label)
+    lib = pkcs11.lib(LIB)
+    token = lib.get_token(token_label=args.token_label)
         if token:
             logger.info("Token found: %s", token)
             with token.open(rw=True) as session:
