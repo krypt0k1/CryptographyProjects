@@ -82,28 +82,28 @@ def main():
                     if args.algorithm == 'RSA':
                         public_key = session.get_key(label=args.label, object_class=pkcs11.ObjectClass.PUBLIC_KEY, key_type = pkcs11.KeyType.RSA)
                         logger.info(f"Public key found with label: {public_key.label}")
-                        time.sleep(1)
+                   
                         extracted_public_key = pkcs11.util.rsa.encode_rsa_public_key(public_key)
                         logger.info("Public key extracted.")
-                        time.sleep(1)
+                       
                         logger.info("Starting to write to file...")
                         time.sleep(1)
                     elif args.algorithm == 'EC':
                         public_key = session.get_key(label=args.label, object_class=pkcs11.ObjectClass.PUBLIC_KEY, key_type = pkcs11.KeyType.EC)
                         logger.info(f"Public key found with label: {public_key.label}")
-                        time.sleep(1)
+                    
                         extracted_public_key = pkcs11.util.ec.encode_ec_public_key(public_key)
                         logger.info("Public key extracted.")
-                        time.sleep(1)
+                    
                         logger.info("Starting to write to file...")
                         time.sleep(1)
                     elif args.algorithm == 'DSA':
                         public_key = session.get_key(label=args.label, object_class=pkcs11.ObjectClass.PUBLIC_KEY, key_type = pkcs11.KeyType.DSA)
                         logger.info(f"Public key found with label: {public_key.label}")
-                        time.sleep(1)
+                    
                         extracted_public_key = pkcs11.util.dsa.encode_dsa_public_key(public_key)
                         logger.info("Public key extracted.")
-                        time.sleep(1)
+                    
                         logger.info("Starting to write to file...")
                         time.sleep(1)
                     else:
