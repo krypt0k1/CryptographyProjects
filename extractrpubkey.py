@@ -158,7 +158,7 @@ def main():
                 except Exception as e:
                     logger.error(f"An error occurred, review the logs: {e}")
         
-        # Close the session after function is completed. 
+
                
       
 
