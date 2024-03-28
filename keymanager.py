@@ -1,20 +1,24 @@
+# Entrust Python PKCS#11 Key Manager
+# Author: Armando Montero
+# Date: 2024/03/01
+# Version: 1.0
+
+# Import modules. 
 import sys
 import pkcs11
 import argparse
 import logging
 import os
+import datetime
+from asn1crypto import pem
 from rich import print
 from rich.table import Table
 from rich.console import Console
 from rich import box
-from pkcs11 import Mechanism, ObjectClass, lib, TokenNotPresent, NoSuchKey, KeyType, Attribute, MGF
+from pkcs11 import ObjectClass, lib, TokenNotPresent, NoSuchKey, KeyType, Attribute
 from pkcs11.util.ec import encode_named_curve_parameters
-from pkcs11.util.rsa import encode_rsa_public_key, decode_rsa_public_key, decode_rsa_private_key
+from pkcs11.util.rsa import encode_rsa_public_key, decode_rsa_public_key
 from pkcs11.util.dsa import encode_dsa_domain_parameters, decode_dsa_domain_parameters, encode_dsa_public_key, encode_dsa_signature, decode_dsa_public_key, decode_dsa_signature
-
- 
- 
-  
   
 # Setup Configuration
 logging.basicConfig(level=logging.INFO)  # Config needed to default output to standard output
@@ -55,24 +59,29 @@ def parse_args():
                                      description="Entrust Python PKCS#11 Key Manager.\n\n"
                                                  "Version 1.0 (2024/02/01)\n\n"
                                                  "Written by: Armando Montero division of nShield & nCipher Support (DPS)\n\n",
-                                     prog="keygen.py",
+                                     prog="keymanager.py",
                                      usage="%(prog)s [--generate] --algorithm RSA --key-size 4096 --token-label 'loadshared accelerator' --label new_key --pin 1234\n"
                                            "%(prog)s [--generate] --algorithm AES --key-size 256 --token-label 'loadshared accelerator' --label new_key --pin 1234\n"
-                                           "%(prog)s [--generate] --algorithm DSA --token-label 'loadshared accelerator' --label new_key --pin 1234\n"
-                                           "%(prog)s [--generate] --algorithm EC --curve secp256r1 --token-label 'loadshared accelerator' --label new_key --pin 1234\n"
-                                           "%(prog)s [--delete] --label key_label --token 'loadshared accelerator'\n"
+                                           "%(prog)s [--generate] --algorithm EC --curve-name secp256r1 --token-label 'loadshared accelerator' --label new_key --pin 1234\n"
+                                           "%(prog)s [--wrap] --algorithm AES --mechanism AES_KEY_WRAP --token 'loadshared accelerator' --label wrapping_key --key-to-wrap key_to_wrap --output-path /home/wrapped_key\n"
+                                           "%(prog)s [--unwrap] --algorithm AES --mechanism AES_KEY_WRAP --token 'loadshared accelerator' --label wrapping_key --new-label unwrapped_key --file-path /home/wrapped_key\n"
+                                           "%(prog)s [--sign] --algorithm RSA --token 'loadshared accelerator' --label key_label --file-path /home/data_to_sign --signature-path /home/signature\n"
+                                           "%(prog)s [--verify] --algorithm RSA --token 'loadshared accelerator' --label key_label --file-path /home/data_to_verify --signature-path /home/signature\n"
+                                           "%(prog)s [--encrypt] --algorithm AES --mechanism AES_CBC_PAD --token 'loadshared accelerator' --label key_label --file-path /home/data_to_encrypt --output-path /home/encrypted_data\n"
+                                           "%(prog)s [--decrypt] --algorithm AES --mechanism AES_CBC_PAD --token 'loadshared accelerator' --label key_label --encrypted-path /home/encrypted_data --output-path /home/decrypted_data\n"
+                                           "%(prog)s [--export] --algorithm RSA --token 'loadshared accelerator' --label key_label --output-path /home/exported_key\n"
+                                           "%(prog)s [--delete] --algorithm AES --label AES_key_label --token 'loadshared accelerator '\n"
                                            "%(prog)s [--copy] --label default_key_label --new-label copied_key\n"
                                            "%(prog)s [--find-token] --token-label 'loadshared accelerator'\n"
-                                           "%(prog)s [--list-slots]\n"
-                                           "%(prog)s [--find-token] --token-label 'loadshared accelerator'",
+                                           "%(prog)s [--list-slots]\n",
                                      allow_abbrev=True,
                                      add_help=True,
-                                     epilog = " Supports AES, RSA, EC, 3DES, and DSA key generation, deletion, and copying. Plan to add support for other algorithms and functions in the future.")
+                                     epilog = " Supports AES, RSA, EC, 3DES, and DSA key generation, deletion, and copying. Provides functionality to perform secure cryptographic operations such as encryption, decryption, signing, verifying, wrapping, unwrapping, and export of public keys. Plan to add support for other algorithms and functions in the future.")
  
     parser.add_argument("-g", "--generate",
                         help="generate new keys",
                         required=False,
-                        default=False,
+                        default=False,                       
                         action="store_true")
     parser.add_argument("-s", "--sign",
                         help="Sign data with the given with the given key label",
@@ -111,14 +120,8 @@ def parse_args():
                         default=False,)
     parser.add_argument("-d", "--delete",
                         help="Delete the keys with the given version",
-                        required=False,
-                        default=False,
-                        action="store_true")
-    parser.add_argument("-i", "--import",
-                        help="Import the key with the given label",
-                        required=False,
-                        default=False,
-                        action="store_true")
+                        required=False,                        
+                        action="store_true")  
     parser.add_argument("-e", "--export",
                         help="Export the key with the given label",
                         required=False,
@@ -150,8 +153,7 @@ def parse_args():
                         default="loadshared accelerator")
     parser.add_argument("-l", "--label",
                         help="plaintext label name for the key",
-                        required=False,
-                        default="default_key_label")  # Default label if none is provided
+                        required=False)
     parser.add_argument('-n', '--new-label',
                         help="The new label for the copied key",
                         required=False,
@@ -189,7 +191,7 @@ def parse_args():
                         default=False)
     parser.add_argument("-ls", "--list-keys",
                         help="List all keys",
-                       # required=False,
+                        required=False,
                         default=False,
                         action="store_true")
     parser.add_argument("-attr", "--attribute",
@@ -218,26 +220,19 @@ def parse_args():
                         help="The key type specification for the key to unwrap",
                         required=False,
                         type=str,
-                        choices={"AES", "RSA", "EC", "DSA"},
+                        choices={"SECRET", "PUBLIC_KEY", "PRIVATE_KEY"},
                         default=False)
-    parser.add_argument('-obj', '--object-class',
-                        help="The object class for the key to unwrap",
-                        required=False,
-                        type=str,
-                        choices={"PUBLIC_KEY", "PRIVATE_KEY", "SECRET_KEY"},
-                        default=False)
-    
  
-    
  
+    # Parse the arguments 
     args = vars(parser.parse_args())
     return args
-   
-       
-     
+
  
 # Main function
 def main():
+    
+   #Args to store the parsed arguments
     args = parse_args()
     token_label = args["token_label"]   
     key_size = args["key_size"]   
@@ -254,51 +249,50 @@ def main():
     encrypted_path = args["encrypted_path"]
     mechanism_type = args["mechanism"]
     key_type = args["key_type"]
-    object_class = args["object_class"]
-    
-     
- 
+
      
 # Call the appropriate function based on the arguments
-    if args["find_token"]:
-        find_token(token_label)
-    elif args["generate"]:
-        gen_key(token_label, key_label, key_size, aes_template, private_rsa_key_template, public_rsa_key_template, algorithm, curve, pin)      
+    
+    if args["generate"]:
+        gen_key(args, token_label,key_label, key_size, aes_template, private_rsa_key_template, public_rsa_key_template, algorithm, curve, pin)      
     elif args["delete"]:
-        delete_key(token_label, key_label,pin)    
-    elif args["list_slots"]:
-        get_slot(slot_label)
+        delete_key(args,token_label,key_label,pin)   
     elif args["copy"]:
-        key_copy(token_label, key_label, new_label, pin)
+        key_copy(args,token_label,key_label,new_label, pin, algorithm)
+    elif args["list_slots"]:
+        get_slot(slot_label)    
     elif args["list_keys"]:
-        list_keys(token_label)
+        list_keys(args,token_label)
+    if args["find_token"]:
+        find_token(args, token_label)
     elif args["sign"]:
-        sign_data(token_label, key_label, input_file_path, signature_path, algorithm, pin)
+        sign_data(args,token_label, key_label,input_file_path, signature_path, algorithm, pin)
     elif args["verify"]:
-        verify_data(token_label, key_label, algorithm, input_file_path, signature_path)
+        verify_data(args,token_label,key_label,algorithm, input_file_path, signature_path)
     elif args["encrypt"]:
-        encrypt_data(token_label, key_label, pin, algorithm, input_file_path, mechanism_type, output_file_path)
+        encrypt_data(args,token_label,key_label,pin, algorithm, input_file_path, mechanism_type, output_file_path)
     elif args["decrypt"]:
-        decrypt_data(token_label, key_label, encrypted_path, output_file_path, algorithm, mechanism_type, pin)
+        decrypt_data(args,token_label,key_label,encrypted_path,output_file_path, algorithm, mechanism_type, pin)
     elif args["wrap"]:
-        wrap_data(token_label, key_label, key_to_wrap, algorithm, output_file_path, pin) 
+        wrap_data(args,token_label,key_label,key_to_wrap,algorithm,mechanism_type,output_file_path, pin)
     elif args["unwrap"]:
-       unwrap_data(token_label, key_label, input_file_path, algorithm, new_label, pin)
-   # elif args["import"]:
-    #    import_key(token_label, key_label, file_path, pin)
-   # elif args["export"]:
-   #    export_key(token_label, key_label, file_path, pin)
+        unwrap_data(args,token_label, key_label, input_file_path, key_type, mechanism_type, algorithm, new_label, pin)
+    elif args["export"]: 
+       export_key(args, token_label, key_label, output_file_path, algorithm)
          
-# Finds a specific token.
- 
-def find_token(token_label):
+# Finds a specific token. 
+def find_token(args,token_label):
+    # Check for bad arguments
+    if args["find_token"] and not args.get("token_label"):
+        print("[bold red]Error:[/bold red] Missing required arguments. Please specify the token label.")
+        sys.exit(1)
+    # Query the token.
     try:
         token = lib.get_token(token_label=token_label)
-         
- 
+        
         # Create a console object
-        console = Console()
- 
+        console = Console() 
+        
         # Create a table
         table = Table(show_header=True, header_style="red", show_lines=True, title="Token Found")
         table.title_style = "italic"
@@ -314,14 +308,17 @@ def find_token(token_label):
  
         # Print the table
         console.print(table)
- 
-    except pkcs11.exceptions.TokenNotPresent:
+         
+    except pkcs11.TokenNotPresent:
         sys.exit(f"No token found with label='{token_label}'.")
-    except pkcs11.exceptions.MultipleTokensReturned:
+    except pkcs11.MultipleTokensReturned:
         sys.exit(f"Multiple tokens found with label='{token_label}'.")
  
 # Find all keys within in all tokens. 
-def list_keys(token_label):
+def list_keys(args,token_label):
+    if args["generate"] and not all(args.get(arg) for arg in ["label", "token_label", "algorithm", "key_size"]):
+        print("[bold red]Error:[/bold red] Missing required arguments. Please specify the label, --token-label, --algorithm, and --pin.")
+        sys.exit(1)
     try:
         token = lib.get_token(token_label=token_label)
         with token.open(rw=True) as session:
@@ -339,8 +336,7 @@ def list_keys(token_label):
         sys.exit(f"No token found with label='{token_label}'.")
     except pkcs11.exceptions.MultipleTokensReturned:
         sys.exit(f"Multiple tokens found with label='{token_label}'.")
-                         
-                
+                  
 # Retrieve all slots information                  
 def get_slot(slot_label):
     try:
@@ -361,89 +357,20 @@ def get_slot(slot_label):
         sys.exit(f"No token found with label='{slot_label}'.")
     except pkcs11.exceptions.MultipleTokensReturned:
         sys.exit(f"Multiple tokens found with label='{slot_label}'.")
-             
-         
-
         
     console = Console()
     console.print(table)
- ####################### TEMPLATE SECTION ############################
- 
-# AES Key Template
-aes_template = {pkcs11.Attribute.TOKEN: "TOKEN",
-            pkcs11.Attribute.SENSITIVE: "SENSITIVE",
-            pkcs11.Attribute.EXTRACTABLE: "EXTRACTABLE",
-            pkcs11.Attribute.WRAP_WITH_TRUSTED: "WRAP_WITH_TRUSTED",
-            pkcs11.Attribute.ENCRYPT: "ENCRYPT",
-            pkcs11.Attribute.DECRYPT: "DECRYPT",
-            pkcs11.Attribute.WRAP: "WRAP",
-            pkcs11.Attribute.UNWRAP: "UNWRAP",
-            pkcs11.Attribute.SIGN: "SIGN",
-            pkcs11.Attribute.VERIFY: "VERIFY",  
-            }
- 
-# RSA Key Template
- 
-args = parse_args()
-rsa_key_length = args["key_size"]
-modulus_bits = rsa_key_length
- 
-public_rsa_key_template = {pkcs11.Attribute.TOKEN: "TOKEN",            
-            pkcs11.Attribute.MODULUS_BITS: modulus_bits,            
-            pkcs11.Attribute.ENCRYPT: "ENCRYPT",           
-            pkcs11.Attribute.WRAP: "WRAP",           
-            pkcs11.Attribute.VERIFY: "VERIFY"}
- 
-private_rsa_key_template = {pkcs11.Attribute.TOKEN: "TOKEN",
-            pkcs11.Attribute.SENSITIVE: "SENSITIVE",            
-            pkcs11.Attribute.MODULUS_BITS: modulus_bits,            
-            pkcs11.Attribute.DECRYPT: "DECRYPT",          
-            pkcs11.Attribute.UNWRAP: "UNWRAP",
-            pkcs11.Attribute.SIGN: "SIGN"}
- 
- 
-# Grab parse for attribute values.
-args = parse_args()      
-attribute_values = args["attribute"] 
- 
-# Iterate through the attribute values and apply them to the template
- 
-for attr, value in attribute_values:
-    # Convert the attribute name to its corresponding attribute value
-    attr = getattr(pkcs11.Attribute, attr)
- 
-    # Apply the boolean value to the template
-    aes_template[attr] = value
-    # Create a function to parse attribute values
-    def parse_attributes(attribute_values, template):
-        for attr, value in attribute_values:
-            # Convert the attribute name to its corresponding attribute value
-            attr = getattr(pkcs11.Attribute, attr)
- 
-            # Apply the attribute value to the template
-            template[attr] = value
- 
-    # Parse attribute values for AES template
-    parse_attributes(attribute_values, aes_template)
- 
-    # Parse attribute values for RSA templates
-    parse_attributes(attribute_values, public_rsa_key_template)
-    parse_attributes(attribute_values, private_rsa_key_template)
      
- 
- 
-ALGORITHM_MAP = {
-    "AES": {"key_type": pkcs11.KeyType.AES, "default_size": 256},
-    "RSA": {"key_type": pkcs11.KeyType.RSA, "default_size": 4096},
-    "EC": {"key_type": pkcs11.KeyType.EC, "default_size": 'secp256r1' },
-    "DSA": {"key_type": pkcs11.KeyType.DSA, "default_size": 1024},
-    # Add more mappings as necessary
-}
- 
  
 # Generate a key
  
-def gen_key(token_label, key_label, key_size, aes_template, private_rsa_key_template, public_rsa_key_template, algorithm, curve, pin):
+def gen_key(args,token_label, key_label, key_size, aes_template, private_rsa_key_template, public_rsa_key_template, algorithm, curve, pin):
+    
+    # Check for bad arguments
+    if args["generate"] and not all(args.get(arg) for arg in ["label", "token_label", "algorithm", "key_size"]):
+        print("[bold red]Error:[/bold red] Missing required arguments. Please specify the label, --token-label, --algorithm, and --pin.")
+        sys.exit(1)
+    
         
     # Generate the key based on the specified algorithm
     try:    
@@ -466,91 +393,105 @@ def gen_key(token_label, key_label, key_size, aes_template, private_rsa_key_temp
              
             if algorithm == "AES":
                 try:
+                    # Find the key. If it does not exist, an exception will be raised
                     key = session.get_key(label=key_label)
                     sys.exit(f"Key with label='{key_label}' already exists.")
                 except pkcs11.NoSuchKey:
                     pass
                 except pkcs11.MultipleObjectsReturned:
-                    sys.exit(f"Multiple keys found with label='{key_label}'.")
-                 
+                    sys.exit(f"Multiple keys found with label='{key_label}'.")  
+                    # Generate the key               
                 key = session.generate_key(key_type, key_size, label=key_label, template=aes_template)
                 print_aes_key_info(key)
- 
-            elif algorithm == "RSA":
+        
+            if algorithm == "RSA":
                 try:
+                    # Find the key. If it does not exist, an exception will be raised.
                     key = session.get_key(label=key_label)
                     sys.exit(f"Key with label='{key_label}' already exists.")
                 except pkcs11.NoSuchKey:
                     pass
                 except pkcs11.MultipleObjectsReturned:
                     sys.exit(f"Multiple keys found with label='{key_label}'.")
-                 
-                public, private = session.generate_keypair(
-                    key_type,
-                    key_length=modulus_bits,
-                    label=key_label,
-                    public_template=public_rsa_key_template,
-                    private_template=private_rsa_key_template,
-                )
-                     
+                    # Generate the key.
+                public, private = session.generate_keypair(key_type,key_length=modulus_bits,label=key_label,
+                                                           public_template=public_rsa_key_template,
+                                                           private_template=private_rsa_key_template,store=True)
                 print_rsa_key_info(public, private)
+
  
-            elif algorithm == "EC":
-                # For EC, we need to generate a public and private key pair and define the curve
-                             
-                # Code to generate EC key pair
+            if algorithm == "EC":
+                # For EC, we need to generate a public and private key pair and define the curve                            
+                # See if key exists. 
                 try:
                     key = session.get_key(label=key_label)
                     sys.exit(f"Key with label='{key_label}' already exists.")
                 except pkcs11.NoSuchKey:
-                    pass
+                    pass 
                 except pkcs11.MultipleObjectsReturned:
-                    sys.exit(f"Multiple keys found with label='{key_label}'.")
-                 
-                 
-                parameters = session.create_domain_parameters(KeyType.EC, {Attribute.EC_PARAMS: encode_named_curve_parameters(curve)}, local=True) # Requires local = True to create_domain_parameters
-                 
-                
-                public_key, private_key = parameters.generate_keypair(label=key_label, store=True)
-                 
-                print_ec_info(public_key, private_key)
-                 
- 
-            elif algorithm == "DSA":
+                    sys.exit(f"Multiple keys found with label='{key_label}'.")                            
+                # Create keypair. 
+                    parameters = session.create_domain_parameters(KeyType.EC, {Attribute.EC_PARAMS: encode_named_curve_parameters(curve)}, local=True) # Requires local = True to create_domain_parameters                                       
+                    public_key, private_key = parameters.generate_keypair(label=key_label, private_template= private_EC_template, public_template = public_EC_template, store=True)                    
+                    print_ec_info(public_key, private_key)
+
+            if algorithm == "DSA":
                 try:
-                                         
+                    # See if key exists.                     
                     key = session.get_key(label= key_label)
                     sys.exit(f"Key with label='{key_label}' already exists.")
                 except pkcs11.exceptions.NoSuchKey:
-                        pass
+                    pass
                 except pkcs11.exceptions.MultipleObjectsReturned:
-                        sys.exit(f"Multiple keys found with label='{key_label}'.")
+                    sys.exit(f"Multiple keys found with label='{key_label}'.")
  
                 # For DSA, we need to generate a public and private key pair
-                          
+                # Generating the domain parameters and keypair                                          
                 parameters = session.generate_domain_parameters(pkcs11.KeyType.DSA, 1024)
                 public_DSA, private_DSA = parameters.generate_keypair(label=key_label, store=True)
  
                 print_dsa_key_info(public_DSA, private_DSA)
-                     
+                
+    except pkcs11.FunctionFailed:
+        sys.exit("Function failed")
+    except pkcs11.PinInvalid:
+        sys.exit("Pin invalid")
+    except pkcs11.TemplateIncomplete:
+        sys.exit("Template incomplete")
+    except pkcs11.TemplateInconsistent:
+        sys.exit("Template inconsistent")
+    except pkcs11.TokenNotPresent:
+        sys.exit("Token not present")
+    except pkcs11.ArgumentsBad:
+        sys.exit("Arguments bad")
+    except pkcs11.AttributeValueInvalid:
+        sys.exit("Attribute value invalid")
+    except pkcs11.NoSuchToken:
+        sys.exit("No such token")
+          
     finally:
        lib.reinitialize()
-         
-     
-    
+
 # Copy a key 
-def key_copy(token_label, key_label, new_label, pin, algorithm):
+def key_copy(args,token_label,key_label,new_label,pin,algorithm):
+    
+    # Check for bad arguments.
+    if args["copy"] and not all(args.get(arg) for arg in ["label", "new_label", "token_label"]):
+        print("[bold red]Error:[/bold red] Missing required arguments. Please specify the label, --new-label, --token-label.")
+        sys.exit(1)
     try:
         token = lib.get_token(token_label=token_label)
+        # Open the token session.
         with token.open(rw=True, user_pin=pin) as session:
             # Verify if key_label exists
             try:
+            # Copy based in algorithm type
                if algorithm in ["AES", "3DES"]:
+                # Find the key. If it does not exist, an exception will be raised.
                 existing_key = session.get_key(label=key_label)
             except pkcs11.NoSuchKey:
                 sys.exit(f"No key found with label='{key_label}'.")
-            
-            try:
+            try:    
                 if algorithm in ["RSA", "EC", "DSA"]:
                     pub = session.get_key(object_class=pkcs11.constants.ObjectClass.PUBLIC_KEY, label=key_label)
                     priv = session.get_key(object_class=pkcs11.constants.ObjectClass.PRIVATE_KEY, label=key_label)
@@ -585,19 +526,24 @@ def key_copy(token_label, key_label, new_label, pin, algorithm):
                 sys.exit(f"Unsupported algorithm '{algorithm}' for key copy.")
     except Exception as e:
         sys.exit(f"An error occurred during the operation. See logs for more information. {e}")
-                
-            
+      
     
 # Delete a key
  
-def delete_key(token_label, key_label, pin):
+def delete_key(args,token_label, key_label, pin):
+    # Check for bad arguments
+    if args["delete"] and not all(args.get(arg) for arg in ["label", "token_label"]):
+        print("[bold red]Error:[/bold red] Missing required arguments. Please specify the [green] --label, --token-label, and/or --pin.")
+        sys.exit(1)
     try:
+        # Define the token.
         token = lib.get_token(token_label=token_label)
+        # Open a session and the delete the key.
         with token.open(rw=True, user_pin=pin) as session:
             key = session.get_key(label=key_label)
             key.destroy() 
             console = Console()
-            table = Table(show_header=True, header_style="dark_green", show_lines=True, title=":thumbs_up: Key Deleted:  ", box = box.ROUNDED, title_style="Bold", border_style="green", style="bright", width=80)
+            table = Table(show_header=True, header_style="green", show_lines=True, title=":thumbs_up: Key Deleted:  ", box = box.ROUNDED, title_style="Bold", border_style="green", style="bright", width=80)
             table.add_column("Token Label")
             table.add_column("Deleted Key Label")
             table.add_row(token.label, key_label)
@@ -610,82 +556,100 @@ def delete_key(token_label, key_label, pin):
         sys.exit(f"An error occurred while deleting the key: {e}")
 
 
- # Sign data with a key
+ # Sign data with a key.
 
-def sign_data(token_label, key_label, input_file_path, signature_path, algorithm, pin):
+def sign_data(args, token_label, key_label, input_file_path, signature_path, algorithm, pin):
+    # Check for bad arguments
+    if args["sign"] and not all(args.get(arg) for arg in ["label", "token_label", "algorithm", "file_path", "signature_path"]):
+        print("[bold red]Error:[/bold red] Missing required arguments. Please specify the [green]--label, --token-label, --algorithm, --file-path, --signature-path, and/or --pin values.")
+        sys.exit(1)
+    # Define the token and time stamp.     
     try:
         token = lib.get_token(token_label=token_label)
-        
+        timestamp = datetime.datetime.now().strftime(" (Date & Time Signed: %d-%m-%Y") 
+        time = datetime.datetime.now().strftime(" / %H:%M:%S)")
+        # The data to sign. 
         data = open(input_file_path, 'rb').read()
-        
+        # Open a session with the token and signs. 
         with token.open(rw=True, user_pin=pin) as session:
           if algorithm in ["AES", "3DES"]: 
             key = session.get_key(label=key_label)
             signature = key.sign(data)
-           
 
           elif algorithm in ["RSA", "DSA", "ECDSA"]:
             private_key = session.get_key(object_class=pkcs11.constants.ObjectClass.PRIVATE_KEY, label=key_label)
-            signature = private_key.sign(data) # Add functionality to allow user to choose the mechanism or use a default one if none is given based on the algorith type.
-        
-        with open(signature_path, 'wb') as sig_file:
+            signature = private_key.sign(data) 
+            
+          # Writes the signature to a file.  
+          with open(signature_path, 'wb') as sig_file:
             sig_file.write(signature)
-            signed_data_confirmation(token, key_label, input_file_path, signature_path)
+            signed_data_confirmation(token, key_label, input_file_path, signature_path + timestamp + time)
      
-     # Error handling       
+     # Error handling.      
     except pkcs11.NoSuchKey:
         sys.exit(f"No key found with label='{key_label}'.")
     except pkcs11.MechanismInvalid:
         sys.exit(f"Invalid mechanism for algorithm '{algorithm}'.")
     except pkcs11.SessionHandleInvalid:
         sys.exit("Invalid session handle.")
-        
+    except pkcs11.TokenNotPresent:
+        sys.exit(f"No token found with label='{token_label}'.")
+    except pkcs11.MultipleTokensReturned:
+        sys.exit(f"Multiple tokens found with label='{token_label}'.")
+    except pkcs11.SignMixin:
+        sys.exit("Sign failed.")
+    except FileNotFoundError:
+        sys.exit("Data file not found.")
+    
 
-
-# Verify signed data with a key
-def verify_data(token_label, key_label, algorithm, input_file_path, signature_path):
+# Verify signed data with a key.
+def verify_data(args,token_label, key_label, algorithm, input_file_path, signature_path):
+    # Check for bad arguments
+    if args["verify"] and not all(args.get(arg) for arg in ["label", "token_label", "algorithm", "file_path", "signature_path"]):
+        print("[bold red]Error:[/bold red] Missing required arguments. Please specify the [green]--label, --token-label, --algorithm, --file-path, --signature-path and/or --pin values.")
+        sys.exit(1)
     try:
         # Load data and signature from files
         with open(input_file_path, 'rb') as data_file, open(signature_path, 'rb') as sig_file:
             data = data_file.read()
             signature = sig_file.read()
 
-        # Access the token and find the public key
+        # Access the token and find the public key.
         with lib.get_token(token_label=token_label).open() as session:
             if algorithm in ['RSA', 'ECDSA', 'DSA']:
                 public_key = session.get_key(object_class=pkcs11.constants.ObjectClass.PUBLIC_KEY, label=key_label)
                 # Verify the signature
                 verification_result = public_key.verify(data, signature)
-                
-                # Find the private key to make reference
-                private_key = session.get_key(object_class=pkcs11.constants.ObjectClass.PRIVATE_KEY, label=key_label)
-                
-                verification_confirmation_asymmetric(verification_result, private_key)
+                               
+                verification_confirmation_asymmetric(verification_result, public_key)
             
             if algorithm in ['AES', '3DES']:
-                key = session.get_key(label=key_label)
-                
-                verification_result = key.verify(data, signature)
-                
-                verification_confirmation_symmetric(verification_result, key)
-                         
+                # Finds the key and verifies the signature.
+                key = session.get_key(label=key_label)                
+                verification_result = key.verify(data, signature)                
+                verification_confirmation_symmetric(verification_result, key)                         
             else:
-                logger.error(f"Unsupported algorithm: {algorithm}")
-                
-
+                logger.error(f"Unsupported algorithm: {algorithm}")    
+                sys.exit(1)            
+# Error handling
     except TokenNotPresent:
-        logger.error(f"No token found with label '{token_label}'.")
+        sys.exit(f"No token found with label '{token_label}'.")
     except NoSuchKey:
-        logger.error(f"No key found with label '{key_label}'.")
+        sys.exit(f"No key found with label '{key_label}'.")
     except FileNotFoundError:
-        logger.error("Data or signature file not found.")
+        sys.exit("Data or signature file not found.")
+    except pkcs11.SignatureInvalid:
+        sys.exit("Signature invalid.")
+    except pkcs11.SignatureLenRange:
+        sys.exit("Signature length out of range.")    
+    except pkcs11.MechanismInvalid:
+        sys.exit("Invalid mechanism.")    
     except Exception as e:
-        logger.exception(f"An error occurred during verification: {str(e)}")
+        sys.exit(f"An error occurred during verification: {str(e)}")
 
     
-# Encrypt a data with a key
 
-MECHANISM_MAP = {
+ENCRYPT_DECRYPT_MECHANISM_MAP = {
     "AES_CBC_PAD": {"mechanism": pkcs11.Mechanism.AES_CBC_PAD},
     "AES_CBC_ENCRYPT_DATA": {"mechanism": pkcs11.Mechanism.AES_CBC_ENCRYPT_DATA},
     "DES3_CBC_PAD": {"mechanism": pkcs11.Mechanism.DES3_CBC_PAD},
@@ -698,25 +662,29 @@ MECHANISM_MAP = {
     "AES": {"default_mechanism": pkcs11.Mechanism.AES_CBC_PAD},
     "3DES": {"default_mechanism": pkcs11.Mechanism.DES3_CBC_PAD},
     "RSA": {"default_mechanism": pkcs11.Mechanism.RSA_PKCS_OAEP},
-    # Add more mappings for other algorithms as necessary
+    
 }
 
-def encrypt_data(token_label, key_label, pin, algorithm, input_file_path, mechanism_type, output_file_path):
+# Encrypt data with a key
+def encrypt_data(args,token_label, key_label, pin, algorithm, input_file_path, mechanism_type, output_file_path):
+    if args["encrypt"] and not all(args.get(arg) for arg in ["label", "token_label", "algorithm", "file_path", "output_path"]):
+        print("[bold red]Error:[/bold red] Missing required arguments. Please specify the [green]--label --token-label, --algorithm, --file-path, --output-path, and --mechanism [/green]. [bold red]If no mechanism is provided, a default mechanism will be used based on the algorithm.")
     try:
         token = lib.get_token(token_label=token_label)
         with token.open(rw=True, user_pin=pin) as session:
             # Direct mapping to default mechanism if none provided
             if mechanism_type is None:
-                if algorithm not in MECHANISM_MAP:
+                if algorithm not in ENCRYPT_DECRYPT_MECHANISM_MAP:
                     raise ValueError(f"Unsupported algorithm: {algorithm}")
-                mechanism_info = MECHANISM_MAP[algorithm]
+                mechanism_info = ENCRYPT_DECRYPT_MECHANISM_MAP[algorithm]
                 mechanism = mechanism_info["default_mechanism"]
             else:
                 # Validate and use the provided mechanism
                 mechanism_key = mechanism_type
-                if mechanism_key not in MECHANISM_MAP:
+                if mechanism_key not in WRAP_MECHANISM_MAP:
                     raise ValueError(f"Invalid mechanism: {mechanism_type}")
-                mechanism = MECHANISM_MAP[mechanism_key]["mechanism"]
+                    sys.exit(1)
+                mechanism = WRAP_MECHANISM_MAP[mechanism_key]["mechanism"]
             
             # Perform encryption
             if algorithm in ["AES", "3DES"]:
@@ -745,37 +713,48 @@ def encrypt_data(token_label, key_label, pin, algorithm, input_file_path, mechan
             # Confirm encryption
             encrypt_confirmation(token, input_file_path, output_file_path, key_label, mechanism)
 
-    except pkcs11.exceptions.NoSuchKey:
-        print("Key not found")
-    except pkcs11.exceptions.NoSuchToken:
-        print("Token not found")
-    except pkcs11.exceptions.PinIncorrect:
-        print("Incorrect PIN")
-    except pkcs11.exceptions.TokenNotPresent:
-        print("Token not present")
-    except pkcs11.exceptions.FunctionFailed:
-        print("Function failed")
-    except pkcs11.exceptions.PKCS11Error:
-        print("PKCS11 Error")
+    except pkcs11.NoSuchKey:
+        sys.exit(f"Key not found with label '{key_label}'.")
+    except pkcs11.NoSuchToken:
+        sys.exit(f"Token not found"f'{token}.')
+    except pkcs11.PinIncorrect:
+        sys.exit("Incorrect PIN")
+    except pkcs11.TokenNotPresent:
+        sys.exit("Token not present")
+    except pkcs11.FunctionFailed:
+        sys.exit("Function failed")
+    except FileNotFoundError:
+        sys.exit("File not found")
+    except pkcs11.MechanismInvalid:
+        sys.exit(f"Invalid mechanism for algorithm '{algorithm}'.")
+    except pkcs11.PKCS11Error:
+        sys.exit("PKCS11 Error")
 
 
+# Decrypt data with a key. 
 
-def decrypt_data(token_label, key_label, encrypted_path, output_file_path, algorithm, mechanism_type, pin):
+def decrypt_data(args,token_label, key_label, encrypted_path, output_file_path, algorithm, mechanism_type, pin):
+    # Check for bad arguments
+    if args["decrypt"] and not all(args.get(arg) for arg in ["label", "token_label", "algorithm", "encrypted_path", "output_path"]):
+        print("[bold red]Error:[/bold red] Missing required arguments. Please specify the [green]--label --token-label, --algorithm, --encrypted-path, --output-path, and --mechanism [/green]. [bold red]If no mechanism is provided, a default mechanism will be used based on the algorithm.")
+        sys.exit(1)
+    # Find Token
     try: 
         token = lib.get_token(token_label=token_label)
         # Open a Session. 
         with token.open(rw=True, user_pin = pin) as session:
+            # Check mechanism if none uses default mechanism based on algorithm. 
             if mechanism_type is None:
-                if algorithm not in MECHANISM_MAP:
+                if algorithm not in ENCRYPT_DECRYPT_MECHANISM_MAP:
                     raise ValueError(f"Unsupported algorithm: {algorithm}")
-                mechanism_info = MECHANISM_MAP[algorithm]
+                mechanism_info = ENCRYPT_DECRYPT_MECHANISM_MAP[algorithm]
                 mechanism = mechanism_info["default_mechanism"]
             else:
                 # Validate and use the provided mechanism
                 mechanism_key = mechanism_type
-                if mechanism_key not in MECHANISM_MAP:
+                if mechanism_key not in ENCRYPT_DECRYPT_MECHANISM_MAP:
                     raise ValueError(f"Invalid mechanism: {mechanism_type}")
-                mechanism = MECHANISM_MAP[mechanism_key]["mechanism"]
+                mechanism = ENCRYPT_DECRYPT_MECHANISM_MAP[mechanism_key]["mechanism"]
          
             if algorithm in ["AES", "3DES"]:    
                 with open(encrypted_path, "rb") as encrypted_file: 
@@ -808,21 +787,67 @@ def decrypt_data(token_label, key_label, encrypted_path, output_file_path, algor
                     decrypt_confirmation(token, key_label, encrypted_path, output_file_path)
                         
     except pkcs11.NoSuchKey:
-        print(f"No key found with label='{key_label}'.")
-    except pkcs11.exceptions.FunctionFailed:
-        print("Function failed")
+        sys.exit(f"No key found with label='{key_label}'.")
+    except pkcs11.FunctionFailed:
+        sys.exit("Function failed")
+    except pkcs11.AttributeTypeInvalid:
+        sys.exit("Attribute type invalid")
+    except pkcs11.DeviceRemoved:
+        sys.exit("Token removed, please reload or insert token")
+    except pkcs11.PinIncorrect:
+        sys.exit("Incorrect PIN")
+    except pkcs11.TokenNotPresent:
+        sys.exit("Token not present")
+    except pkcs11.NoSuchToken:
+        sys.exit(f"No such token with label {token}")
+    except FileNotFoundError:
+        sys.exit("File not found")
     except Exception as e:
-        print(f"An error occurred while decrypting the file: {e}")
+        sys.exit(f"An error occurred while decrypting the file: {e}")
+        
+WRAP_MECHANISM_MAP= {
+    "AES_KEY_WRAP": {"mechanism": pkcs11.Mechanism.AES_KEY_WRAP},
+    "AES_KEY_WRAP_PAD": {"mechanism": pkcs11.Mechanism.AES_KEY_WRAP_PAD},
+    "AES_ECB": {"mechanism": pkcs11.Mechanism.AES_ECB},
+    "RSA_PKCS_OAEP": {"mechanism": pkcs11.Mechanism.RSA_PKCS_OAEP},
+    "DES3_CBC_PAD": {"mechanism": pkcs11.Mechanism.DES3_CBC_PAD},
+    
+    "AES": {"default_mechanism": pkcs11.Mechanism.AES_KEY_WRAP},
+    "RSA": {"default_mechanism": pkcs11.Mechanism.RSA_PKCS_OAEP},
+    "DES3": {"default_mechanism": pkcs11.Mechanism.DES3_CBC_PAD},                                   
+ }
 
-def wrap_data(token_label, key_label, key_to_wrap, algorithm, output_file_path, pin):
+# Securely wrap keys with a wrapping key
+
+def wrap_data(args,token_label, key_label, key_to_wrap, algorithm, mechanism_type,output_file_path, pin):
+    # Check for bad arguments
+    if args["wrap"] and not all(args.get(arg) for arg in ["label", "token_label", "key_to_wrap", "algorithm", "mechanism", "output_path", "pin"]):
+        print("[bold red]Error:[/bold red] Missing required arguments. Please specify the label, --token label, --key to wrap, --algorithm, --mechanism, --output-path, and/or --pin.If no mechanism is provided, a default mechanism will be used based on the algorithm.")
+        sys.exit(1)  
     try:  
+        # Define the token to use.
         token = lib.get_token(token_label = token_label)
+        # Open a session. 
         with token.open(rw=True, user_pin=pin) as session:
+            # Checks algorithm and mechanism type.
+            if mechanism_type is None:
+                if algorithm not in WRAP_MECHANISM_MAP:
+                    raise ValueError(f"Unsupported algorithm: {algorithm}")
+                mechanism_info = WRAP_MECHANISM_MAP[algorithm]
+                mechanism = mechanism_info["default_mechanism"]
+            else:
+                # Validate and use the provided mechanism for the wrapping operation. 
+                mechanism_key = mechanism_type
+                if mechanism_key not in ENCRYPT_DECRYPT_MECHANISM_MAP:
+                    raise ValueError(f"Invalid mechanism: {mechanism_type}")
+                mechanism = ENCRYPT_DECRYPT_MECHANISM_MAP[mechanism_key]["mechanism"]
+                
+                # Wrap based on algorithm type.
             if algorithm in ["AES", "3DES"]: # 3DES IS CONSIDERED INSECURE USE AES WHERE POSSIBLE
                 wrapping_key = session.get_key(label=key_label)
                 wrapped_key = session.get_key(label=key_to_wrap)
-                crypttext = wrapping_key.wrap_key(wrapped_key, mechanism =None,mechanism_param=None)  
-            
+                crypttext = wrapping_key.wrap_key(wrapped_key, mechanism =mechanism ,mechanism_param=None)  
+                # Write the file. 
                 with open(output_file_path, "wb") as wrapped_file:
                  wrapped_file.write(crypttext)
                  wrap_confirmation(token, key_label, key_to_wrap, output_file_path)
@@ -830,59 +855,274 @@ def wrap_data(token_label, key_label, key_to_wrap, algorithm, output_file_path, 
             if algorithm in ["RSA"]:
                 wrapping_key = session.get_key(object_class=pkcs11.constants.ObjectClass.PUBLIC_KEY, label=key_label)
                 wrapped_key = session.get_key(label=key_to_wrap)
-                crypttext = wrapping_key.wrap_key(wrapped_key, mechanism=None, mechanism_param=None) # Remember to add functionality to allow user to specify mechanism and mechanism_param. 
-            
+                crypttext = wrapping_key.wrap_key(wrapped_key, mechanism=mechanism, mechanism_param=None) 
+                # Write the file. 
                 with open(output_file_path, "wb") as wrapped_file:
                  wrapped_file.write(crypttext)
                  wrap_confirmation(token, key_label, key_to_wrap, output_file_path)
-                
+        
+        # Error Handling.        
     except pkcs11.NoSuchKey:
-        print(f"No key found with label='{key_label}'.")
+        sys.exit(f"No key found with label='{key_label}'.")
     except pkcs11.exceptions.FunctionFailed:
-        print("Wrapping function failed")
+        sys.exit("Wrapping function failed")
     except pkcs11.exceptions.KeyHandleInvalid:
-        print("Key handle invalid, you may be trying to wrap a key with WRAP_WITH_TRUSTED using an untrusted key")
+        sys.exit("Key handle invalid, you may be trying to wrap a key with WRAP_WITH_TRUSTED using an untrusted key")
     except pkcs11.exceptions.KeyNotWrappable:
-        print("Key not wrappable")
+        sys.exit("Key not wrappable")
     except pkcs11.exceptions.KeyUnextractable:
-        print("Key unextractable")
+        sys.exit("Key unextractable")
+    except pkcs11.exceptions.DeviceRemoved:
+        sys.exit("Token removed, please reload or insert token")
+    except pkcs11.exceptions.PinIncorrect:
+        sys.exit("Incorrect PIN")
+    except pkcs11.exceptions.TokenNotPresent:
+        sys.exit("Token not present")
+    except FileNotFoundError:
+        sys.exit("File not found")
 
-def unwrap_data(token_label, key_label, input_file_path, algorithm, new_label, pin):
-    try: 
+# Securely unwrap keys onto Hardware Security Module (HSM) with the wrapping key for secure key storage.
+
+def unwrap_data(args, token_label, key_label, input_file_path, key_type, mechanism_type, algorithm, new_label, pin): 
+    # Check bad arguments.
+    if args["unwrap"] and not all(args.get(arg) for arg in ["label", "token_label", "algorithm", "file_path", "key_type", "mechanism", "new_label"]):
+        print("[bold red]Error:[/bold red] Missing required arguments. Please specify the label, --token-label, --algorithm, --file-path, --key-type, --mechanism, --new-label, and/or --pin.") 
+    try:
+        # Define the token. 
         token = lib.get_token(token_label = token_label)
+        # Open a session. 
         with token.open(rw=True, user_pin=pin) as session:
-                wrapping_key = session.get_key(label=key_label)
-                with open(input_file_path, "rb") as wrapped_file:
-                 crypttext = wrapped_file.read()
-                 
-                if algorithm in ["AES", "3DES"]:
-                    unwrapped_key = wrapping_key.unwrap_key(object_class = ObjectClass.SECRET_KEY, key_type = KeyType.AES, 
-                                                        mechanism= Mechanism.AES_KEY_WRAP, 
+            # Open the wrapped key material. 
+            with open(input_file_path, "rb") as wrapped_file:
+                # Checks algorithm and mechanism type.
+                if mechanism_type is None:
+                    if algorithm not in WRAP_MECHANISM_MAP:
+                        raise ValueError(f"Unsupported algorithm: {algorithm}")
+                    mechanism_info = WRAP_MECHANISM_MAP[algorithm]
+                    mechanism = mechanism_info["default_mechanism"]
+                else:
+                    # Validate and use the provided mechanism
+                    mechanism_key = mechanism_type
+                    if mechanism_key not in ENCRYPT_DECRYPT_MECHANISM_MAP:
+                        raise ValueError(f"Invalid mechanism: {mechanism_type}")
+                    mechanism = ENCRYPT_DECRYPT_MECHANISM_MAP[mechanism_key]["mechanism"]
+                    
+                # Read the wrapped key material.
+                crypttext = wrapped_file.read()
+                # Unwrap based on algorithm type.
+                if algorithm == "AES":
+                    wrapping_key = session.get_key(label=key_label)
+                    unwrapped_key = wrapping_key.unwrap_key(object_class = ObjectClass.SECRET_KEY, key_type = KeyType.AES, mechanism= mechanism, 
                                                         mechanism_param=None, 
                                                         key_data = crypttext,
                                                         label=new_label, 
                                                         store=True,
-                                                        template= {Attribute.SENSITIVE: True, Attribute.EXTRACTABLE: False, Attribute.WRAP_WITH_TRUSTED: True,
-                                                                   Attribute.ENCRYPT: True, Attribute.DECRYPT: True, Attribute.WRAP: True, Attribute.UNWRAP: True, Attribute.SIGN: True, Attribute.VERIFY: True})
+                                                        template= {Attribute.SENSITIVE: True, Attribute.EXTRACTABLE: False, Attribute.WRAP_WITH_TRUSTED: True, 
+                                                                   Attribute.ENCRYPT: True, Attribute.DECRYPT: True, Attribute.WRAP: True, Attribute.UNWRAP: True, Attribute.SIGN: True, Attribute.VERIFY: True}) # Can be modified or template = None for default values.
                     
                     unwrap_confirmation(token, key_label, input_file_path, unwrapped_key)
+                
+                if algorithm =="RSA":
+                    wrapping_key = session.get_key(label=key_label, object_class=pkcs11.constants.ObjectClass.PRIVATE_KEY)
                     
+                    unwrapped_key = wrapping_key.unwrap(ObjectClass.PRIVATE_KEY, key_type, crypttext, mechanism=mechanism, mechanism_param=None, label=new_label, store=True)
+                    unwrap_confirmation(token, key_label, input_file_path, unwrapped_key)
+                
+    # Error Handling.
     except pkcs11.NoSuchKey:
-        print(f'No key found with label={key_label}.')
-    except pkcs11.exceptions.FunctionFailed:
-        print("Function failed")
-    except pkcs11.exceptions.UnwrappingKeyHandleInvalid:
-        print("Unwrapping key handle invalid")
-    except pkcs11.exceptions.UnwrappingKeySizeRange:
-        print("Unwrapping key size range")
+        sys.exit(f"No wrapping key found with label'{key_label}'.")
+    except pkcs11.FunctionFailed:
+        sys.exit("Function failed")
+    except pkcs11.TemplateInconsistent:
+        sys.exit("Template inconsistent")
+    except pkcs11.UnwrappingKeyHandleInvalid:
+        sys.exit("Unwrapping key handle invalid")
+    except pkcs11.UnwrappingKeySizeRange:
+        sys.exit("Unwrapping key size range")
+    except pkcs11.DeviceRemoved:
+        sys.exit("Token removed, please reload or insert token")
+    except pkcs11.exceptions.PinIncorrect:
+        sys.exit("Incorrect PIN")
+    except pkcs11.exceptions.TokenNotPresent:
+        sys.exit("Token not present") 
+
+# Export keys from the HSM      
+# Only configured to export the public key. Private & Secret keys should remain within the HSM boundary.    
     
+def export_key(args,token_label, key_label, output_file_path, algorithm): 
+    # Check for bad arugments
+    if args["export"] and not all(args.get(arg) for arg in ["label", "token_label", "output_path", "algorithm"]):
+        print("[bold red]Error:[/bold red] Missing required arguments. Please specify the label, token label, output path, and algorithm.")
+        sys.exit(1)
     
+    try:    
+        # Define the token.
+        token = lib.get_token(token_label=token_label)
+        # Open a session.
+        with token.open(rw=True) as session:
+           # Access the token and find the key.
+            key = session.get_key(object_class=pkcs11.constants.ObjectClass.PUBLIC_KEY, label=key_label)
+            if algorithm == "RSA":
+                    exported_key = pkcs11.util.rsa.encode_rsa_public_key(key)
+            if algorithm == "DSA":
+                    exported_key = pkcs11.util.dsa.encode_dsa_public_key(key)
+            if algorithm == "EC":
+                    exported_key = pkcs11.util.ec.encode_ec_public_key(key)
+        
+        # Write the public key to the specified output file 
+        with open(output_file_path, "wb") as key_file:
+            # Write the public key attributes to the specified output file
+            if output_file_path.endswith('.pem'):
+                pem_output = output_file_path
+                der_output = output_file_path[:-4] + '.der'
+            elif output_file_path.endswith('.der'):
+                pem_output = output_file_path[:-4] + '.pem'
+                der_output = output_file_path
+            else:
+                pem_output = output_file_path + '.pem'
+                der_output = output_file_path + '.der'
+                    
+            # Write the public key to the specified output file in DER format
+            with open(der_output, 'wb') as der_file:
+                 der_file.write(exported_key)
+            # Write the public key to the specified output file in PEM format
+            with open(pem_output, 'wb') as pem_file:
+                pem_file.write(pem.armor('PUBLIC KEY', exported_key))
+            exported_key_confirmation(token, key_label, output_file_path)
+
+                
+    # Error Handling
+    except pkcs11.NoSuchKey:
+        sys.exit(f"No key found with label='{key_label}'.")
+    except pkcs11.KeyUnextractable:
+        sys.exit("Key unextractable, key must be extractable to export")
+    except pkcs11.FunctionFailed:
+        sys.exit("Function failed")
+    except pkcs11.AttributeSensitive:
+        sys.exit("Attribute sensitive, key must be not sensitive to export")  
+    except pkcs11.DeviceRemoved:
+        sys.exit("Token removed, please reload or insert token")
+    except pkcs11.PinIncorrect:
+        sys.exit("Incorrect PIN")
+    except pkcs11.TokenNotPresent:# Only configured to export the public key. Private & Secret keys should remain within the HSM boundary.
+        sys.exit("Token not present")      
+        
+
+####################### TEMPLATE SECTION ############################
+ 
+# AES Key Template
+aes_template = {pkcs11.Attribute.TOKEN: "TOKEN",
+            pkcs11.Attribute.SENSITIVE: "SENSITIVE",
+            pkcs11.Attribute.EXTRACTABLE: "EXTRACTABLE",
+            pkcs11.Attribute.WRAP_WITH_TRUSTED: "WRAP_WITH_TRUSTED",
+            pkcs11.Attribute.ENCRYPT: "ENCRYPT",
+            pkcs11.Attribute.DECRYPT: "DECRYPT",
+            pkcs11.Attribute.WRAP: "WRAP",
+            pkcs11.Attribute.UNWRAP: "UNWRAP",
+            pkcs11.Attribute.SIGN: "SIGN",
+            pkcs11.Attribute.VERIFY: "VERIFY",  
+            }
+ 
+# RSA Key Template
+ 
+args = parse_args()
+rsa_key_length = args["key_size"]
+modulus_bits = rsa_key_length
+ 
+public_rsa_key_template = {pkcs11.Attribute.TOKEN: "TOKEN",            
+            pkcs11.Attribute.MODULUS_BITS: modulus_bits,            
+            pkcs11.Attribute.ENCRYPT: "ENCRYPT",           
+            pkcs11.Attribute.WRAP: "WRAP",           
+            pkcs11.Attribute.VERIFY: "VERIFY"}
+ 
+private_rsa_key_template = {pkcs11.Attribute.TOKEN: "TOKEN",
+            pkcs11.Attribute.SENSITIVE: "SENSITIVE",            
+            pkcs11.Attribute.MODULUS_BITS: modulus_bits,            
+            pkcs11.Attribute.DECRYPT: "DECRYPT",          
+            pkcs11.Attribute.UNWRAP: "UNWRAP",
+            pkcs11.Attribute.SIGN: "SIGN"}
+
+# EC Template
+
+private_EC_template= {pkcs11.Attribute.TOKEN: True,                     
+                      pkcs11.Attribute.PRIVATE: True,                     
+                      pkcs11.Attribute.SIGN: True,
+                      pkcs11.Attribute.SIGN_RECOVER: False, 
+                      }
+public_EC_template = {pkcs11.Attribute.TOKEN: True,                    
+                      pkcs11.Attribute.SIGN: False,                      
+                      pkcs11.Attribute.VERIFY: True,
+                      pkcs11.Attribute.VERIFY_RECOVER: False,
+                      }
+ 
+# Grab parse for attribute values.
+args = parse_args()      
+attribute_values = args["attribute"] 
+ 
+# Iterate through the attribute values and apply them to the template
+ 
+for attr, value in attribute_values:
+    # Convert the attribute name to its corresponding attribute value
+    attr = getattr(pkcs11.Attribute, attr)
+ 
+    # Apply the boolean value to the template
+    aes_template[attr] = value
+    # Create a function to parse attribute values
+    def parse_attributes(attribute_values, template):
+        for attr, value in attribute_values:
+            # Convert the attribute name to its corresponding attribute value
+            attr = getattr(pkcs11.Attribute, attr)
+ 
+            # Apply the attribute value to the template
+            template[attr] = value
+ 
+    # Parse attribute values for AES template
+    parse_attributes(attribute_values, aes_template)
+ 
+    # Parse attribute values for RSA templates
+    parse_attributes(attribute_values, public_rsa_key_template)
+    parse_attributes(attribute_values, private_rsa_key_template)
+
+ALGORITHM_MAP = {
+    "AES": {"key_type": pkcs11.KeyType.AES, "default_size": 256},
+    "RSA": {"key_type": pkcs11.KeyType.RSA, "default_size": 4096},
+    "EC": {"key_type": pkcs11.KeyType.EC, "default_size": 'secp256r1' },
+    "DSA": {"key_type": pkcs11.KeyType.DSA, "default_size": 1024},
+    
+}        
+                    
+                                       
                                         ######## Printing Functions ##########
+# For export_key function
+
+def exported_key_confirmation(token, key_label, output_file_path):
+    table = Table(show_header=True, header_style="green", show_lines=True, title=" Public Key Successfully Exported!", 
+                  title_style="Bold", border_style="bright_black", style="bright", width=150, box= box.ROUNDED)
+    table.add_column("Token Label")
+    table.add_column("Exported Key Label")
+    table.add_column("Exported Key Material File (DER)")
+    table.add_column("Exported Key Material File (PEM)")
+    table.add_row(token.label, key_label, output_file_path + '.der', output_file_path + '.pem')
+            
+    console = Console()
+    console.print(table)                                       
+                                        
+# for import_key function
+def imported_key_confirmation(token, key_label, input_file_path):
+    table = Table(show_header=True, header_style="green", show_lines=True, title=":thumbs_up: Key Imported:  ", 
+                  padding = 1,title_style="Bold", border_style="bright_black", style="bright", width=150, box= box.ROUNDED)
+    table.add_column("Token Label")
+    table.add_column("Imported Key Label")
+    table.add_column("Key Material File")
+    table.add_row(token.label, key_label, input_file_path)
+            
+    console = Console()
+    console.print(table)                                        
                                         
 # For sign_data function 
 
 def signed_data_confirmation(token, key_label, input_file_path, signature_path):
-    table = Table(show_header=True, header_style="dark_green", show_lines=True, title=":smiley: File Signed:  ", title_style="Regular",
+    table = Table(show_header=True, header_style="dark_green", show_lines=True, title=":smiley: File Signed!  ", title_style="Regular",
                      box = box.ROUNDED, border_style="green", style="bright", width=150)
     table.add_column("Token Label")
     table.add_column("Key Label")
@@ -892,8 +1132,7 @@ def signed_data_confirmation(token, key_label, input_file_path, signature_path):
     
     console = Console()
     console.print(table)
-    
-                                            
+                          
                                         
 # For wrap_data function
 def wrap_confirmation(token, key_label, key_to_wrap, output_file_path):
@@ -911,7 +1150,7 @@ def wrap_confirmation(token, key_label, key_to_wrap, output_file_path):
  
 # For unwrap_data function
 def unwrap_confirmation(token, key_label, input_file_path, unwrapped_key):
-    table = Table(show_header=True, header_style="dark_green,", box = box.ROUNDED,
+    table = Table(show_header=True, header_style="green,", box = box.ROUNDED,
                   show_lines=True, title=":thumbs_up: Key Unwrapped:  ", title_style="Bold", border_style="bright_black", style="bright", width=150)
     table.add_column("Token Label")
     table.add_column("Wrapping Key Label")
@@ -939,54 +1178,46 @@ def encrypt_confirmation(token, input_file, output_file, key_label, mechanism):
 
 def decrypt_confirmation(token, key_label, input_file_path, output_file_path):
     table = Table(show_header=True, header_style="dark_green", show_lines=True, title=":thumbs_up: File Decrypted:  ",
-                  padding= 1,title_style="Bold", border_style="bright_black", style="bright", width=150, box= box.ROUNDED)
+                  title_style="Bold", border_style="bright_black", style="bright", width=150, box= box.ROUNDED)
     table.add_column("Token Label")
     table.add_column("File to decrypt")
     table.add_column("Decrypted File")
     table.add_column("Key Label")
-    table.add_row(token.label, input_file_path, output_file_path, key_label)
-            
+    table.add_row(token.label, input_file_path, output_file_path, key_label) 
+               
     console = Console()
     console.print(table)
             
  # For verify_data function using symmetric keys             
 def verification_confirmation_symmetric(verification_result, key):
-
-
  table = Table(show_header=True, header_style="dark_green",
                box = box.ROUNDED, title="File Verified :thumbs_up:", style="Bold", border_style = "green", show_lines=True)
  table.add_column("Signature Verification Result")
  table.add_column("Signed by Secret Key Label") 
  table.add_row(str(verification_result), key.label)
+ 
  console = Console()
-
  console.print(table)              
  
  # For verify_data function using asymmetric keys
-def verification_confirmation_asymmetric(verification_result, private_key):
+def verification_confirmation_asymmetric(verification_result, public_key):
     table = Table(show_header=True, header_style="dark_green",box = box.ROUNDED, 
                   border_style= "green", style="Bold", show_lines=True)
     table.add_column("Signature Verification Result")
-    table.add_column("Signed by Public Key Label")
+    table.add_column("Signed by Public Key Label")    
+    table.add_row(str(verification_result),public_key.label)
     
-    table.add_row(str(verification_result),private_key.label)
     console = Console()
     console.print(table)
                 
-
-
-
-
-# print AES info ##
+# Print AES info ##
 
 def print_aes_key_info(key):
 # Create and define a table for the key information
   console = Console()
  
-  table = Table(show_header=True, header_style="dark_green", show_lines=True, box = box.ROUNDED, title="Key Information")
-  table.add_column("Attribute", style="bright", width=50, justify="center")
- 
-        # Add a column for the key information
+  table = Table(show_header=True, header_style="dark_green", show_lines=False, box = box.ROUNDED, title="Key Information")
+  table.add_column("Attribute", style="bright", width=50, justify="center") 
   table.add_column("Value", style="bright", width=50, justify="center")
   table.title_style = "bold"
   table.border_style = "green"
@@ -1010,9 +1241,8 @@ def print_aes_key_info(key):
         "VERIFY": key.__getitem__(pkcs11.Attribute.VERIFY),
          
     }       
-        
-  for attribute, value in key_info.items():
-    
+  # Extra formatting for key size and key type.     
+  for attribute, value in key_info.items():    
     if attribute == "KEY SIZE":
         key_size = str(value) + " bits"
         if value == 32:
@@ -1048,11 +1278,11 @@ def print_rsa_key_info(public, private):
     # Create a table for the key information
     
     console = Console()
-    table = Table(show_header=True, header_style="dark green", show_lines=True, border_style= "green" ,title=" Key Pair Generated Succesfully!")
+    table = Table(show_header=True, header_style="dark_green", show_lines=True, border_style= "green" ,title=" Key Pair Generated Succesfully!")
     table.add_column("Attribute", style="dim", width=25, justify="center")
     table.add_column("Value", style="bright", width=20, justify="center")
     table.title_style = "bold"
-    table.border_style = "bright black"
+    table.border_style = "bright_black"
     
     
     public_info = {
@@ -1066,12 +1296,7 @@ def print_rsa_key_info(public, private):
         "ENCRYPT": public.__getitem__(pkcs11.Attribute.ENCRYPT),
         "WRAP": public.__getitem__(pkcs11.Attribute.WRAP),
         "VERIFY": public.__getitem__(pkcs11.Attribute.VERIFY)}
-        #"SENSITIVE": public.__getitem__(pkcs11.Attribute.SENSITIVE),       ## NOT ALLOWED IN PUBLIC KEY
-        #"EXTRACTABLE": public.__getitem__(pkcs11.Attribute.EXTRACTABLE),   ## NOT ALLOWED IN PUBLIC KEY 
-       #"WRAP WITH TRUSTED": public.__getitem__(pkcs11.Attribute.WRAP_WITH_TRUSTED),  ## NOT ALLOWED IN PUBLIC KEY        
-        #"DECRYPT": public.__getitem__(pkcs11.Attribute.DECRYPT),  ## NOT ALLOWED IN PUBLIC KEY        
-        #"UNWRAP": public.__getitem__(pkcs11.Attribute.UNWRAP), ## NOT ALLOWED IN PUBLIC KEY
-        #"SIGN": public.__getitem__(pkcs11.Attribute.SIGN), ## NOT ALLOWED IN PUBLIC KEY
+   
         
     
     private_info = {"EXTRACTABLE": private.__getitem__(pkcs11.Attribute.EXTRACTABLE),
@@ -1079,17 +1304,7 @@ def print_rsa_key_info(public, private):
                     "DECRYPT": private.__getitem__(pkcs11.Attribute.DECRYPT),                    
                     "UNWRAP": private.__getitem__(pkcs11.Attribute.UNWRAP),
                     "SIGN": private.__getitem__(pkcs11.Attribute.SIGN),
-                    #"VERIFY": private.__getitem__(pkcs11.Attribute.VERIFY)   ## NOT ALLOWED IN PRIVATE KEY
-                    #"LABEL": private.__getitem__(pkcs11.Attribute.LABEL),  ## NOT ALLOWED IN PRIVATE KEY
-                    #"TOKEN": private.__getitem__(pkcs11.Attribute.TOKEN),  ## NOT ALLOWED IN PRIVATE KEY
-                    #"KEY TYPE": private.__getitem__(pkcs11.Attribute.KEY_TYPE), ## NOT ALLOWED IN PRIVATE KEY
-                    #"KEY SIZE": private.__getitem__(pkcs11.Attribute.MODULUS_BITS),  ## NOT ALLOWED IN PRIVATE KEY
-                    #"TRUSTED": private.__getitem__(pkcs11.Attribute.TRUSTED), ## NOT ALLOWED IN PRIVATE KEY
-                    #"PRIVATE": private.__getitem__(pkcs11.Attribute.PRIVATE), ## NOT ALLOWED IN PRIVATE KEY
-                    #"MODIFIABLE": private.__getitem__(pkcs11.Attribute.MODIFIABLE), ## NOT ALLOWED IN PRIVATE KEY
-                    #"SENSITIVE": public.__getitem__(pkcs11.Attribute.SENSITIVE), ## NOT ALLOWED IN PRIVATE KEY
-                    #"ENCRYPT": private.__getitem__(pkcs11.Attribute.ENCRYPT), ## NOT ALLOWED IN PRIVATE KEY
-                    #"WRAP": private.__getitem__(pkcs11.Attribute.WRAP), ## NOT ALLOWED IN PRIVATE KEY
+           
     }        
          
     for attribute, value in public_info.items():
@@ -1103,14 +1318,12 @@ def print_rsa_key_info(public, private):
     console.print(table)
    
   
-  
-  
  # Print DSA Key Information
   
 def print_dsa_key_info(public_DSA, private_DSA):
     # Create a table for the key information
     console = Console()
-    table = Table(show_header=True, header_style="dark green", show_lines=True, title=" Key Pair Generated Successfully!")
+    table = Table(show_header=True, header_style="dark_green", show_lines=True, title=" Key Pair Generated Successfully!")
     table.add_column("Attribute", style="dim", width=25, justify="center")
     table.add_column("Value", style="bright", width=20, justify="center")
     table.title_style = "bold"
@@ -1132,17 +1345,7 @@ def print_dsa_key_info(public_DSA, private_DSA):
      
      
     private_info = {"LABEL": private_DSA.__getitem__(pkcs11.Attribute.LABEL),}
-        #"TOKEN": private_DSA.__getitem__(pkcs11.Attribute.TOKEN),
-        #"KEY TYPE": private_DSA.__getitem__(pkcs11.Attribute.KEY_TYPE),
-        #"PRIME": private_DSA.__getitem__(pkcs11.Attribute.PRIME),   
-        #"SUBPRIME": private_DSA.__getitem__(pkcs11.Attribute.SUBPRIME),
-       # "BASE": private_DSA.__getitem__(pkcs11.Attribute.BASE),
-        #"VALUE": private_DSA.__getitem__(pkcs11.Attribute.VALUE), ## Removed because it is not allowed in private key / leaks priv key.
-        #"LOCAL": private_DSA.__getitem__(pkcs11.Attribute.LOCAL),}
-        #"EXTRACTABLE": private_DSA.__getitem__(pkcs11.Attribute.EXTRACTABLE),
-        #"SIGN": private_DSA.__getitem__(pkcs11.Attribute.SIGN),
-        #"VERIFY": private_DSA.__getitem__(pkcs11.Attribute.VERIFY)
-        #"SENSITIVE": private_DSA.__getitem__(pkcs11.Attribute.SENSITIVE)
+       
   
     for attribute, value in public_info.items():
               table.add_row(attribute, str(value))
@@ -1162,7 +1365,7 @@ def print_dsa_key_info(public_DSA, private_DSA):
 def print_ec_info(public, private):
      # Create a table for the key information
     console = Console()
-    table = Table(show_header=True, header_style="dark green", show_lines=True, title="Key Information")
+    table = Table(show_header=True, header_style="dark_green", show_lines=True, title="Key Information")
     table.add_column("Attribute", style="dim", width=25, justify="center")
     table.add_column("Value", style="bright", width=20, justify="center")
     table.title_style = "italic"
@@ -1210,16 +1413,30 @@ def print_key_copy_success(token_label, key_label, new_label):
 
 # For list_keys function
 
-def print_public_keys(token_label,public_keys):
+def print_public_keys(token_label, public_keys):
     console = Console()
-    table = Table(show_header=True, header_style="dark_green", box = box.ROUNDED, show_lines=True, title="Public Key Found:", title_style="bold", border_style="green", style="bright", width=100)
+    table = Table(show_header=True, header_style="dark_green", box=box.ROUNDED, show_lines=True, title="Public Key Found:", title_style="bold", border_style="green", style="bright", width=100)
     table.add_column("Token Label")
-    table.add_column("Key Label")    
+    table.add_column("Key Label")
     table.add_column("Key Type")
-    table.add_column("Key Size")
     
-    table.add_row(token_label, public_keys.label, str(public_keys.key_type), str(public_keys.key_length)) 
-    console.print(table)                
+    
+
+    if public_keys.key_type == KeyType.RSA:   
+        table.add_column("Key Size")     
+        modulus = str(public_keys[Attribute.MODULUS_BITS])
+        table.add_row(token_label, public_keys.label, str(public_keys.key_type), str(modulus) + "bits")
+    elif public_keys.key_type == KeyType.DSA:
+        table.add_column("Prime")
+        table.add_column("Subprime") 
+        table.add_column("Base")
+        table.add_row(token_label, public_keys.label, str(public_keys.key_type), str(public_keys[Attribute.PRIME].hex()), str(public_keys[Attribute.SUBPRIME].hex()), str(public_keys[Attribute.BASE].hex()))
+    elif public_keys.key_type == KeyType.EC:
+        table.add_column("Curve")
+        curve = str(public_keys[Attribute.EC_PARAMS])
+        table.add_row(token_label, public_keys.label, str(public_keys.key_type), str(curve))
+    
+    console.print(table)
            
 def print_private_keys(token_label, private_keys):
     console = Console()
@@ -1227,9 +1444,20 @@ def print_private_keys(token_label, private_keys):
     table.add_column("Token Label")
     table.add_column("Key Label")
     table.add_column("Key Type")
-    table.add_column("Key Size")
     
-    table.add_row(token_label, private_keys.label, str(private_keys.key_type), str(private_keys.key_length)) 
+    if private_keys.key_type == KeyType.RSA:
+        table.add_column("Key Size")
+        
+        table.add_row(token_label, private_keys.label, str(private_keys.key_type), str(private_keys[Attribute.MODULUS_BITS]) +  "bits")
+    if private_keys.key_type == KeyType.DSA:
+        table.add_column("Prime")
+        table.add_column("Subprime")
+        table.add_column("Base")        
+        table.add_row(token_label, private_keys.label, str(private_keys.key_type), str(private_keys[Attribute.PRIME].hex()), str(private_keys[Attribute.SUBPRIME].hex()), str(private_keys[Attribute.BASE].hex()))
+    if private_keys.key_type == KeyType.EC:
+        table.add_column("Curve")
+        curve = str(private_keys[Attribute.EC_PARAMS])
+        table.add_row(token_label, private_keys.label, str(private_keys.key_type),str(curve))
     console.print(table)   
                     
            
@@ -1240,15 +1468,9 @@ def print_secret_keys(token_label, secret_keys):
     table.add_column("Key Label")    
     table.add_column("Key Type")
     table.add_column("Key Size")
-    
-    table.add_row(token_label, secret_keys.label, str(secret_keys.key_type), str(secret_keys.key_length + " bits")) 
+    key_length = str(secret_keys.key_length)
+    table.add_row(token_label, secret_keys.label, str(secret_keys.key_type), str(key_length) + "bits")
     console.print(table)
-       
-            
-            
-  
-
-
 
 # Call to main function
 if __name__ == "__main__":
@@ -1257,3 +1479,4 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(repr(e))
         raise e
+
