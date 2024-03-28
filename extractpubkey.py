@@ -29,9 +29,9 @@ os.environ["CKNFAST_FAKE_ACCELERATOR_LOGIN"] = '1'
 
 # Arguments parser.
 def parse_args():
-    parser = argparse.ArgumentParser(prog='extractpubkey.py',
+    parser = argparse.ArgumentParser(prog='keytool.py',
                                      usage='%(prog)s [options]',
-                                     description=' Extract RSA Public Key from nShield HSM.',
+                                     description=' Extract Public Keys from nShield HSM.',
                                      epilog="Example: %(prog)s --extract --algorithm RSA --token-label 'loadshared accelerator' --label my_RSA_key --output /home/user/public_key",                                     
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      add_help=True)
