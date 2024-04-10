@@ -51,7 +51,8 @@ class KeyManager:
         parser.add_argument("-k", "--key_label", type=str, help="Label of the key")
         parser.add_argument("-i", "--input_path", type=str, help="Path to the input file")
         parser.add_argument("-o", "--output_path", type=str, help="Path to the output file")
-        parser.add_argument("-a", "--algorithm", type=str, help="Algorithm to use", default="AES")        
+        parser.add_argument("-a", "--algorithm", type=str, help="Algorithm to use", default="AES")
+        parser.add_argument("-m", "--mechanism", type=str, help="Mechanism to use", default="AES_CBC_PAD")
         parser.add_argument("-iv", "--iv", type=int, help="Initialization vector", default = 128)
         parser.add_argument("-e", "--encrypt", action="store_true", help="Encrypt the data")
         parser.add_argument("-d", "--decrypt", action="store_true", help="Decrypt the data")
@@ -146,7 +147,7 @@ class KeyManager:
                     encrypted = key[0].encrypt(data, mechanism=Mechanism.RSA_PKCS_OAEP, mechanism_param=(Mechanism.SHA_1, MGF.SHA1, None))
                     logger.info("Encrypting data....")
                     sleep(8)
-                    
+
                     # Write the encrypted data to the output file
                     output_file.write(encrypted)
                     logger.info(f"Data encrypted using key label: {args.key_label} from token label: {args.token_label} successfully saved to {args.output_path}")
@@ -239,7 +240,7 @@ class KeyManager:
                 logger.info(f"Data decrypted using key label: {args.key_label} from token label: {args.token_label} successfully saved to {args.output_path}")
                 sleep(1)
 
-        # Close the session        PUBLIC_KEY
+        # Close the session        
         self.close_session()
         logger.info(f"Session successfully closed!")
 
@@ -259,8 +260,31 @@ def main():
 if __name__ == "__main__":
     try:
         main()
+
+    # Handle exceptions    
     except FileNotFoundError as e:
         logger.error(f"File not found: {e}")
     except pkcs11.exceptions.FunctionFailed:
         logger.error("Function failed. Check the input parameters.")
+    except pkcs11.exceptions.MechanismInvalid:
+        logger.error("Invalid mechanism. Check the input parameters.")
+    except pkcs11.exceptions.MechanismParamInvalid:
+        logger.error("Invalid mechanism parameter. Check the input parameters.")
+    except pkcs11.exceptions.ObjectNotFound:
+        logger.error("Object not found. Check the input parameters.")
+    except pkcs11.exceptions.PinExpired:
+        logger.error("Incorrect PIN. Check the input parameters.")
+    except pkcs11.exceptions.PinInvalid:
+        logger.error("Invalid PIN.")
+    except pkcs11.exceptions.TokenNotFound:
+        logger.error("Token not found. Check the input parameters.")
+    except pkcs11.exceptions.TokenNotPresent:
+        logger.error("Token not present. Check the input parameters.")
+    except pkcs11.exceptions.UserAlreadyLoggedIn:
+        logger.error("User already logged in. Reset the token/ session.")
+    except pkcs11.exceptions.UserNotLoggedIn:
+        logger.error("User not logged in.")
+    except pkcs11.exceptions.SessionHandleInvalid:
+        logger.error("Session handle invalid.")
+   
         exit(1)
