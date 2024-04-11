@@ -270,14 +270,12 @@ if __name__ == "__main__":
         logger.error("Invalid mechanism. Check the input parameters.")
     except pkcs11.exceptions.MechanismParamInvalid:
         logger.error("Invalid mechanism parameter. Check the input parameters.")
-    except pkcs11.exceptions.ObjectNotFound:
+    except pkcs11.exceptions.ObjectHandleInvalid:
         logger.error("Object not found. Check the input parameters.")
     except pkcs11.exceptions.PinExpired:
         logger.error("Incorrect PIN. Check the input parameters.")
     except pkcs11.exceptions.PinInvalid:
-        logger.error("Invalid PIN.")
-    except pkcs11.exceptions.TokenNotFound:
-        logger.error("Token not found. Check the input parameters.")
+        logger.error("Invalid PIN.")  
     except pkcs11.exceptions.TokenNotPresent:
         logger.error("Token not present. Check the input parameters.")
     except pkcs11.exceptions.UserAlreadyLoggedIn:
