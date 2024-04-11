@@ -51,8 +51,8 @@ Parameters:
 # Methods
 
 # open_session()
-
   Opens a session with the nCipher nShield HSM.
+  
   Returns: A pkcs11.Session object representing the open session.
 
 # close_session()
