@@ -34,9 +34,7 @@ The knowledge of cryptography is a linchpin of ineffective cybersecurity strateg
 
 The KeyManager class provides a high-level interface for managing cryptographic keys and performing encryption and decryption operations using nCipher nShield Hardware Security Modules (HSM). It supports various cryptographic algorithms including AES, 3DES, and RSA, leveraging the PKCS#11 cryptographic standard for interaction with the HSM.
 
-def __init__(self, lib_path, token_label, pin, key_label, input_path, output_path, algorithm, mechanism, iv):
-
-Initializes a new instance of the KeyManager class.
+def __init__(self, lib_path, token_label, pin, key_label, input_path, output_path, algorithm, mechanism, iv): # Initializes a new instance of the KeyManager class.
 
 Parameters:
 
