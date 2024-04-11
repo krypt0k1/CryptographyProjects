@@ -45,8 +45,7 @@ Parameters:
 5. input_path (str): File path for the input data to be encrypted or decrypted.
 6. output_path (str): Destination file path for the resulting data after encryption or decryption.
 7. algorithm (str): The cryptographic algorithm to use (e.g., "AES", "3DES", "RSA").
-8. mechanism (str): The PKCS#11 mechanism identifier for the cryptographic operation (currently unused, intended for future flexibility).
-9. iv (int/bytes): The initialization vector for the cryptographic operation. For algorithms requiring an IV, this can be the size of the IV expected or the IV bytes directly.
+8. iv (int/bytes): The initialization vector for the cryptographic operation. For algorithms requiring an IV, this can be the size of the IV expected or the IV bytes directly.
 
 # Methods
 
