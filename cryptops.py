@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(program_name := "cryptops")
 
 
-# Class for managing keys and cryptographic operations
+# Class for managing values
 
 class KeyManager:
     def __init__(self, lib_path, token_label, pin, key_label,input_path, output_path, algorithm, mechanism, iv):
@@ -39,7 +39,7 @@ class KeyManager:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter, 
         epilog="Developed by Armando Montero", 
         prog="cryptops.py", 
-        usage="python3 cryptops.py -e <encrypt>-l <lib_path> -t <token_label> -p <pin> -k <key_label> -i <input_path> -o <output_path> -a <algorithm> -m <mechanism> -iv <iv> ", 
+        usage="python3 cryptops.py -e <encrypt>-l <lib_path> -t <token_label> -p <pin> -k <key_label> -i <input_path> -o <output_path> -a <algorithm> -iv <iv> ", 
         prefix_chars="-", 
         add_help=True, 
         allow_abbrev=True)
@@ -52,7 +52,6 @@ class KeyManager:
         parser.add_argument("-i", "--input_path", type=str, help="Path to the input file")
         parser.add_argument("-o", "--output_path", type=str, help="Path to the output file")
         parser.add_argument("-a", "--algorithm", type=str, help="Algorithm to use", default="AES")
-        parser.add_argument("-m", "--mechanism", type=str, help="Mechanism to use", default="AES_CBC_PAD")
         parser.add_argument("-iv", "--iv", type=int, help="Initialization vector", default = 128)
         parser.add_argument("-e", "--encrypt", action="store_true", help="Encrypt the data")
         parser.add_argument("-d", "--decrypt", action="store_true", help="Decrypt the data")
@@ -99,7 +98,7 @@ class KeyManager:
             sleep(3)
 
         if args.algorithm == "RSA":
-        # Adjusted for RSA, ECC to correctly use the mechanism for public key retrieval
+        # Adjusted for RSA to correctly use the mechanism for public key retrieval
             key_iter = session.get_objects({Attribute.CLASS: ObjectClass.PUBLIC_KEY, Attribute.LABEL: self.key_label})
             key = list(key_iter)  # Convert the SearchIter object to a list
             logger.info(f'Public key label: {self.key_label} found in token label: {self.token_label}')
@@ -181,7 +180,7 @@ class KeyManager:
             sleep(3)
         
         if args.algorithm == "RSA":
-        # Adjusted for RSA, ECC to correctly use the mechanism for public key retrieval
+        # Adjusted for RSA to correctly use the mechanism for private key retrieval
             key_iter = session.get_objects({Attribute.CLASS: ObjectClass.PRIVATE_KEY, Attribute.LABEL: self.key_label})
             key = list(key_iter)  # Convert the SearchIter object to a list
             logger.info(f'Public key label: {self.key_label} found in token label: {self.token_label}')
