@@ -272,7 +272,7 @@ if __name__ == "__main__":
     except pkcs11.exceptions.ObjectHandleInvalid:
         logger.error("Object not found. Check the input parameters.")
     except pkcs11.exceptions.PinExpired:
-        logger.error("Incorrect PIN. Check the input parameters.")
+        logger.error("PIN has expired. Change the pin or check the input parameters.")
     except pkcs11.exceptions.PinInvalid:
         logger.error("Invalid PIN.")  
     except pkcs11.exceptions.TokenNotPresent:
