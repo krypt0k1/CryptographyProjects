@@ -49,14 +49,6 @@ Parameters:
 
 # Methods
 
-# open_session()
-  Opens a session with the nCipher nShield HSM.
-  
-  Returns: A pkcs11.Session object representing the open session.
-
-# close_session()
-   Closes the currently active HSM session.
-
 # encrypt(args)
 
    Encrypts the data specified by the input_path using the key labeled key_label and writes the encrypted data to output_path.
