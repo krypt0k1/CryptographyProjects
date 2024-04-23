@@ -377,12 +377,6 @@ private_rsa_key_template = {pkcs11.Attribute.TOKEN: "TOKEN",
 args = parse_args()      
 attribute_values = args["attribute"] 
  
-# Iterate through the attribute values and apply them to the template
- 
-for attr, value in attribute_values:
-    # Convert the attribute name to its corresponding attribute value
-    attr = getattr(pkcs11.Attribute, attr)
- 
     # Apply the boolean value to the template
     aes_template[attr] = value
     # Create a function to parse attribute values
