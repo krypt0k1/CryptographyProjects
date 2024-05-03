@@ -8,7 +8,7 @@ Supported operations on CKA_SECRET_KEY, CKA_PRIVATE_KEY, and CKA_PUBLIC_KEY obje
 
 It can perform the following operations:
 
-Generate
+- Generate
 - Copy
 - Delete
 - Wrap
