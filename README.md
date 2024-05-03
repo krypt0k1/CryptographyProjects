@@ -1,9 +1,5 @@
 # Public-Key Cryptographic Standards #11 
 
-
-# Public-Key Cryptographic Standards #11 
-
-
 # Introduction 
 ______________________________________________________
 PKCS #11, short for Public-Key Cryptography Standards #11, is a widely used API (Application Programming Interface) standard that facilitates cryptographic token operations and secure key management. The PKCS series was initially developed by RSA Data Security Inc. during the early 1990s as a set of cryptographic standards to promote secure communication and data encryption. PKCS #11, introduced in this series, was created to standardize interactions with cryptographic hardware devices, such as smart cards and hardware security modules.
