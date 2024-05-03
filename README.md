@@ -1,88 +1,3 @@
-# Public-Key Cryptographic Standards #11 
-
-
-# Introduction 
-______________________________________________________
-PKCS #11, short for Public-Key Cryptography Standards #11, is a widely used API (Application Programming Interface) standard that facilitates cryptographic token operations and secure key management. The PKCS series was initially developed by RSA Data Security Inc. during the early 1990s as a set of cryptographic standards to promote secure communication and data encryption. PKCS #11, introduced in this series, was created to standardize interactions with cryptographic hardware devices, such as smart cards and hardware security modules.
-
-Over the years, PKCS #11 has undergone several revisions and updates to accommodate advancements in cryptographic techniques and address emerging security challenges. Notably, RSA Security first published PKCS #11 as version 1.0 in 1995, and later, in 2004, it was transferred to the ownership of the OASIS (Organization for the Advancement of Structured Information Standards) consortium. The standard's current version, as of the knowledge cutoff in September 2021, is PKCS #11 v2.40.
-
-Hardware Security Modules (HSMs) have a separate but parallel history to PKCS #11. HSMs are devices designed to safeguard cryptographic keys and perform cryptographic operations securely. They offer tamper-resistant protection and are used in various industries to ensure sensitive data's confidentiality, integrity, and authenticity. As the demand for robust security solutions increased, integrating PKCS #11 with HSMs became a natural choice. The collaboration between PKCS #11 and HSMs allowed organizations to leverage the standardized API for interacting with cryptographic tokens while utilizing the added security benefits of dedicated hardware protection offered by HSMs.
-
-Integrating PKCS #11 with HSMs has proven invaluable for a wide range of applications, including digital signatures, SSL/TLS (Secure Sockets Layer/Transport Layer Security) acceleration, data encryption, and key management. This combination protects sensitive cryptographic material and enhances the overall security posture of systems and applications. PKCS #11 has a long-standing history in the realm of cryptographic standards, evolving to meet the changing landscape of security needs. Integrating PKCS #11 with Hardware Security Modules (HSMs) has significantly enhanced the security and reliability of cryptographic operations, making it a vital component in modern cybersecurity practices.
-
-
-# Cryptoki Application Interface (API)
-
-Prereqs
-
-1. Have the latest version of Python (python3)
-2. Download the necessary Python modules
-     -Run pip install python and pip install python-pkcs11
-3. Enable the following variables on your /opt/nfast/cknfastrc file
-   - CKNFAST_FAKE_ACCELERATOR_LOGIN = 1
-       - CKNFAST_LOADSHARING = 1
-       - CKNFAST_DEBUG=10
-       - CKNFAST_DEBUGFILE= /opt/nfast/pkcs11.log
-       - CKNFAST_OVERRIDE_SECURITY_ASSURANCES=all (not required but may be necessary for some operations such as insecure algorithms and wrapping/unwrapping mechanisms)
-
-
-# Introduction
-
-The PKCS #11 (Public-Key Cryptography Standards #11) API, also known as Cryptoki (short for "Cryptographic Token Interface"), is a widely used standard that defines a platform-independent API for accessing cryptographic tokens such as hardware security modules (HSMs) and smart cards. The main goal of the PKCS #11 API is to provide a standardized interface for applications to perform cryptographic operations using these tokens while abstracting the underlying hardware details.
-
-Key goals and features of the PKCS #11 API include:
-
-Abstraction of Cryptographic Tokens: The API abstracts the specific details of various cryptographic tokens, allowing applications to interact with them using a consistent interface regardless of the token's physical or logical characteristics.
-
-Security: PKCS #11 aims to provide a secure means of utilizing cryptographic functions by separating the application from the low-level cryptographic operations. It allows applications to offload cryptographic processing to dedicated hardware, which can be more resistant to certain types of attacks.
-
-Interoperability: PKCS #11 promotes interoperability by providing a standard API that can be implemented by various vendors, ensuring that applications developed to the PKCS #11 standard can work with different hardware tokens without significant modifications.
-
-Functionality: The API covers a broad range of cryptographic functions, including encryption, decryption, digital signatures, key generation, key management, and more. This enables developers to build secure applications that leverage these functionalities.
-
-Cryptographic Agility: PKCS #11 allows for the dynamic loading and management of cryptographic algorithms and mechanisms, which helps ensure that applications can adapt to new security requirements and advances in cryptography over time.
-
-Hardware Protection: Using PKCS #11 to interact with hardware tokens like HSMs, sensitive cryptographic material can be securely stored and managed within the hardware, reducing the risk of exposure and unauthorized access.
-
-Vendor Independence: Applications that use the PKCS #11 API are not tied to a specific hardware vendor, allowing developers to choose the most suitable hardware token for their needs without being locked into a particular vendor's solution.
-
-
-# Process
-
-Using the PKCS #11 API involves several steps that an application follows to interact with cryptographic tokens (such as hardware security modules or smart cards) and perform various cryptographic operations.
-
-Here's a general overview of the typical process:
-
-1. Initialization:
-   Load the PKCS #11 library provided by the token vendor.
-   Initialize the library by calling the C_Initialize function. This sets up the PKCS #11 environment and prepares the application for interacting with cryptographic tokens.
-
- 2. Token and Slot Enumeration:
-    Enumerate available slots (physical or logical slots where tokens are inserted).
-    Retrieve information about the tokens present in the slots using functions like C_GetSlotList, C_GetTokenInfo, etc.
-
- 3. Token Management:
-    Perform token-specific actions like logging in, logging out, changing PINs, etc.
-    Manage cryptographic objects (keys, certificates) stored on the token using functions like C_CreateObject, C_DestroyObject, etc.
-
- 4. Key Generation:
-    Generate cryptographic keys using functions like C_GenerateKeyPair, C_GenerateKey, etc.
-
- 5. Cryptographic Operations:
-    Perform cryptographic operations like encryption, decryption, signing, and verification using the keys stored on the token.
-    Use functions such as C_Encrypt, C_Decrypt, C_Sign, C_Verify, etc.
-
- 6. Object Management:
-    Manage cryptographic objects on the token, including creating, deleting, and retrieving objects using functions like C_CreateObject, C_DestroyObject, C_FindObjects, etc.
-
- 7. Token Information:
-    Retrieve information about the token, such as manufacturer details, model, serial number, supported mechanisms, etc., using functions like C_GetTokenInfo.
-
-8.  Finalization:
-    Terminate the PKCS #11 library usage by calling the C_Finalize function. This releases any resources and cleans up the PKCS #11 environment.
-
-
 # p11-tool
 
 ![image-2024-5-1_14-47-20](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/2198e943-fa86-4d6c-a7ec-2b704f5b38e9)
@@ -96,11 +11,144 @@ It can perform the following operations:
 Generate
 - Copy
 - Delete
-- Export (public key)
 - Wrap
 - Unwrap
 - Encrypt
 - Decrypt
 - Sign 
 - Verify
+- Export (public key)
 
+Note: 
+By default, the nCipher HSM PKCS#11 DLL is utilized and defined in args.lib_path; make sure you change to the desired DLL. 
+
+Syntax Examples:
+
+# Generating Keys
+
+- AES
+   
+  python3 p11-tool.py --generate --algorithm AES --key-label AES_KEY --key-length 256 --token-label 'loadshared accelerator'
+
+- 3DES (DES3)
+  python3 p11-tool.py --generate --algorithm DES3 --key-label DES3_KEY --key-length 1024 --token-label 'loadshared accelerator'
+  
+- RSA
+   
+  python3 p11-tool.py --generate --algorithm RSA --key-label RSA_KEY --key-length 2048 --token-label 'loadshared accelerator'
+
+- EC
+   
+  python3 p11-tool.py --generate --algorithm EC --key-label EC_KEY --curve secp521r1 --token-label 'loadshared accelerator'
+
+- DSA
+  
+  python3 p11-tool.py --generate --algorithm  --key-label DSA_KEY --token-label 'loadshared accelerator'
+
+Note: 
+You can create keys with custom attributes by adding the --attribute or -attr flag allowed values:
+
+VALUE = y/n or yes/no or TRUE/FALSE (boolean)
+
+Example --attribute EXTRACTABLE=yes MODIFIABLE=yes SIGN=y VERIFY=y WRAP=n UNWRAP=no ENCRYPT=y DECRYPT=no WRAP_WITH_TRUSTED=no
+
+If you do not define all the attributes when using the --attribute argument it will automatically set that attribute to TRUE or if no attributes are given via --attribute the key will use a default template. 
+
+# Copying keys
+
+To copy a key you will need to give the key label of the key we want to copy, the algorithm, the new key label, and the token label where the key resides. 
+
+python3 p11-tool.py --copy --key-label RSA_KEY  --new-label <NEW_KEY_LABEL> --algorithm RSA --token-label 'loadshared accelerator' --pin (if required for Operator Card sets or Soft cards, module protected keys use a fake pin such as 1234)
+
+
+# Deleting keys
+
+To delete keys you will need to specify the key, token label, and the algorithm used for that key you want to delete. This is due to how SECRET KEYS vs PUB/PRIV keys are found. 
+
+python3 p11-tool.py --delete --key-label RSA_KEY --algorithm RSA --token-label 'loadshared accelerator' 
+
+The same concept can be applied to EC, AES, and DSA keys. 
+
+
+# Encrypt and Decrypt
+
+To encrypt data we will need to give out the following arguments:
+
+Encrypt 
+- AES
+  
+  python3 p11-tool.py --encrypt --key-label <AES_KEY_LABEL> --algorithm AES --input-path "C:\EncryptME.txt" --output-path "C:\EncryptedFile" --token-label 'loadshared accelerator' --iv 128 (iv only for Stream Cipher algorithms like AES/DES3)
+
+- RSA
+  
+  python3 p11-tool.py --encrypt --key-label <RSA_KEY_LABEL> --algorithm RSA --input-path "C:\EncryptME.txt" --output-path "C:\EncryptedFile" --token-label 'loadshared accelerator'
+
+- DES3
+  
+  python3 p11-tool.py --encrypt --key-label <DES3_KEY_LABEL>  --algorithm AES --input-path "C:\EncryptME.txt" --output-path "C:\EncryptedFile" --token-label 'loadshared accelerator' --iv 128 (iv only for Stream Cipher algorithms like AES/DES3)
+
+Decrypt 
+
+- AES
+  
+  python3 p11-tool.py --decrypt --key-label <AES_KEY_LABEL>  --algorithm AES  --input-path  "C:\EncryptedFile" --output-path "C:\Decrypted" --token-label 'loadshared accelerator'  
+
+- RSA
+  
+  python3 p11-tool.py --decrypt --key-label <RSA_KEY_LABEL> --algorithm RSA --input-path  "C:\EncryptedFile" --output-path "C:\Decrypted" --token-label 'loadshared accelerator'
+
+- DES3
+  
+  python3 p11-tool.py --decrypt --key-label <DES3_KEY_LABEL>  --algorithm DES3 --input-path  "C:\EncryptedFile" --output-path "C:\Decrypted" --token-label 'loadshared accelerator'
+
+  
+# Wrap and Unwrap 
+ To wrap a key CKA_EXTRACTABLE=TRUE must be set on the key to extract. We will need to give the following arguments to wrap and unwrap keys from the HSM. 
+
+Wrapping 
+- AES
+   
+   python3 p11-tool.py --wrap --wrapping-key <AES_KEY_LABEL> --key-to-wrap KEY_TO_WRAP_AES --algorithm AES --token-label 'loadshared accelerator' --output-path "C:\Wrapped_KEY_AES"
+
+- DES3
+
+  python3 p11-tool.py --wrap --wraping-key <DES3_KEY_LABEL> --key-to-wrap <KEY_TO_WRAP_LABEL> --algorithm AES --token-label 'loadshared accelerator' --output-path "C:\Wrapped_KEY_DES3"
+- RSA
+  
+  python3 p11-tool.py --wrap --wrapping-key <RSA_KEY_LABEL> --key-to-wrap <KEY_TO_WRAP_LABEL> --algorithm RSA --token-label 'loadshared accelerator' --output-path "C:\Wrapped_KEY_RSA"
+
+- EC
+  
+  python3 p11-tool.py --wrap --wrapping-key <EC_KEY_LABEL> --key-to-wrap <KEY_TO_WRAP_LABEL> --algorithm EC --token-label 'loadshared accelerator' --output-path "C:\Wrapped_KEY_EC"
+
+- DSA
+
+  python3 p11-tool.py --wrap --wrapping-key <DSA_KEY_LABEL> --key-to-wrap <KEY_TO_WRAP_LABEL> --algorithm DSA --token-label 'loadshared accelerator' --output-path "C:\Wrapped_KEY_DSA"
+
+Unwrapping
+- AES
+   
+   python3 p11-tool.py --unwrap --wrapping-key <AES_KEY_LABEL> --key-to-wrap KEY_TO_WRAP_AES --algorithm AES --token-label 'loadshared accelerator' --input-path "C:\Wrapped_KEY_AES"
+
+- DES3
+
+  python3 p11-tool.py --unwrap --wraping-key <DES3_KEY_LABEL> --key-to-wrap <KEY_TO_WRAP_LABEL> --algorithm AES --token-label 'loadshared accelerator' ---input-path "C:\Wrapped_KEY_DES3"
+- RSA
+  
+  python3 p11-tool.py --unwrap --wrapping-key <RSA_KEY_LABEL> --key-to-wrap <KEY_TO_WRAP_LABEL> --algorithm RSA --token-label 'loadshared accelerator' --input-path "C:\Wrapped_KEY_RSA"
+
+- EC
+  
+  python3 p11-tool.py --unwrap --wrapping-key <EC_KEY_LABEL> --algorithm EC --token-label 'loadshared accelerator' --input-path "C:\Wrapped_KEY_EC"
+
+- DSA
+
+  python3 p11-tool.py --unwrap --wrapping-key <DSA_KEY_LABEL> --algorithm DSA --token-label 'loadshared accelerator' --input-path "C:\Wrapped_KEY_DSA"
+
+
+
+# Signing and Verifying 
+
+
+
+   
