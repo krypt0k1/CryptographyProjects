@@ -30,6 +30,7 @@ The knowledge of cryptography is a linchpin of ineffective cybersecurity strateg
       * SSL/TLS encryption to protect website connections.
       * Encrypted and digitally signed emails.
       * Verification of an individual's or organization's identity in online transactions.
+        
 3 . Encryption & Decryption Tool 
    - [CryptOps](https://github.com/krypt0k1/CryptographyProjects/blob/main/cryptops.py) provides an all-encompassing solution for secure cryptographic operations such as encryption and decryption. Using the nShield Hardware Security Modules (HSMs) it supports various cryptographic algorithms including AES, 3DES, and RSA, the application uses the PKCS#11 standard use for secure and efficient communication with HSM to be highly configurable by command line logic, allowing users to specify information such as PKCS#11 library path, HSM token label, user pin, key label for encryption and decryption process. Key features include session management integration with HSM, extensive logging for business insights, and robust error-handling mechanisms. Designed with security and functionality in mind, this tool is ideal for anyone looking to integrate HSM-based cryptographic functionality into their security operations
 
