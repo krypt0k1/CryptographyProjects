@@ -20,7 +20,7 @@ The knowledge of cryptography is a linchpin of ineffective cybersecurity strateg
 
 1 . p11-tool
 
-   - [p11-tool](https://github.com/krypt0k1/CryptographyProjects/tree/p11-tool.py) is a program for managing a robust PKCS#11 infrastructure using HSM's and the Cryptoki API, designed for various cryptographic operations including encryption, decryption, key management, and more. It supports multiple cryptographic algorithms like AES, 3DES, DSA, and EC, ensuring compatibility with Hardware Security Modules (HSM). The script leverages custom modules and standard libraries to provide a comprehensive tool for cryptographic management. My project aims to facilitate secure cryptographic processes and hardware interactions. This tool integrates custom modules such as EncryptDecrypt, ManagementOperations, and SignVerify, along with standard libraries to ensure robust and secure cryptographic processes. In short, this tool serves as a valuable resource for any seeking to learn and enhance security practices in cryptographic environments.
+   - [p11-tool](https://github.com/krypt0k1/CryptographyProjects/tree/p11-tool.py) is a program for managing a robust PKCS#11 infrastructure using HSM's and the Cryptoki API, designed for various cryptographic operations including encryption, decryption, key management, and more. It supports multiple cryptographic algorithms like AES, 3DES, DSA, and EC. The script leverages some custom modules and standard libraries to provide a comprehensive tool for cryptographic management. My project aims to facilitate secure cryptographic processes and hardware interactions. This tool integrates custom modules such as EncryptDecrypt, ManagementOperations, and SignVerify, along with standard libraries to ensure robust and secure cryptographic processes. In short, this tool serves as a valuable resource for any seeking to learn and enhance security practices in cryptographic environments.
 
 
 2 . Public Key Exporter
@@ -32,6 +32,3 @@ The knowledge of cryptography is a linchpin of ineffective cybersecurity strateg
       * Verification of an individual's or organization's identity in online transactions.
 3 . Encryption & Decryption Tool 
    - [CryptOps](https://github.com/krypt0k1/CryptographyProjects/blob/main/cryptops.py) provides an all-encompassing solution for secure cryptographic operations such as encryption and decryption. Using the nShield Hardware Security Modules (HSMs) it supports various cryptographic algorithms including AES, 3DES, and RSA, the application uses the PKCS#11 standard use for secure and efficient communication with HSM to be highly configurable by command line logic, allowing users to specify information such as PKCS#11 library path, HSM token label, user pin, key label for encryption and decryption process. Key features include session management integration with HSM, extensive logging for business insights, and robust error-handling mechanisms. Designed with security and functionality in mind, this tool is ideal for anyone looking to integrate HSM-based cryptographic functionality into their security operations
-
-
-
