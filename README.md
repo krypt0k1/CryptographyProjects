@@ -1,5 +1,6 @@
 # Public-Key Cryptographic Standards #11 
 
+
 # Introduction 
 ______________________________________________________
 PKCS #11, short for Public-Key Cryptography Standards #11, is a widely used API (Application Programming Interface) standard that facilitates cryptographic token operations and secure key management. The PKCS series was initially developed by RSA Data Security Inc. during the early 1990s as a set of cryptographic standards to promote secure communication and data encryption. PKCS #11, introduced in this series, was created to standardize interactions with cryptographic hardware devices, such as smart cards and hardware security modules.
@@ -82,238 +83,24 @@ Here's a general overview of the typical process:
     Terminate the PKCS #11 library usage by calling the C_Finalize function. This releases any resources and cleans up the PKCS #11 environment.
 
 
+# p11-tool
 
-# Advanced Encryption Standard (AES) Key Generator Script (aeskeygen.py)
+![image-2024-5-1_14-47-20](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/2198e943-fa86-4d6c-a7ec-2b704f5b38e9)
 
-Features:
+This Python program manages a robust PKCS#11 infrastructure using nCipher nShield HSM, designed for various cryptographic operations including encryption, decryption, key management, and more. It supports multiple cryptographic algorithms like AES, 3DES, DSA, and EC, ensuring compatibility with Hardware Security Modules (HSM). The script leverages custom modules and standard libraries to provide a comprehensive tool for cryptographic management. My project aims to facilitate secure cryptographic processes and hardware interactions. This tool integrates custom modules such as EncryptDecrypt, ManagementOperations, and SignVerify, along with standard libraries to ensure robust and secure cryptographic processes. In short, this tool serves as a valuable resource for any seeking to learn and enhance security practices in cryptographic environments.
 
-1. Generates keys.
-    a. Can add custom boolean attributes to a key. 
-    b. Available attributes: TRUSTED, PRIVATE, PRIVATE, MODIFIABLE, SENSITIVE, EXTRACTABLE, WRAP_WITH_TRUSTED, ENCRYPT, DECRYPT, WRAP, UNWRAP, SIGN, and VERIFY. 
-    c. Available value pairs:  { True, yes, y, 1}  {False, no, n, 0}
- 3. Deletes keys.
- 4. Find tokens based on the label. 
- 5. Lists all available slots.   
+Supported operations on CKA_SECRET_KEY, CKA_PRIVATE_KEY, and CKA_PUBLIC_KEY objects. 
 
-Usage:
-![image-2024-2-9_18-33-32](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/ae453d72-774e-4a72-80aa-22f1d4d06f31)
+It can perform the following operations:
 
-# 1. Create a Key. 
-
-aeskeygen.py --generate --token-label 'loadshared accelerator' --pin 1234 --label new_key-22 --key-size 256 (verbose)
-
-aeskeygen.py -g -t 'loadshared accelerator' -p 1234 -l new_key 22 -k 256 (short-argument)
-
-
-
-![image-2024-2-7_8-6-31](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/96a83bfb-aa74-40cf-a096-5a366d03cbe5)
-
-
-   AES Key Size Reference:
-
-- 128-bit AES key /8 = 16 bytes
-
-- 192-bit AES key /8 = 24 bytes
-
-- 256-bit AES key /8 = 32 bytes. 
-
-# 1a. Create a Key with Custom Attributes. 
-
-aeskeygen.py -g -t 'loadshared accelerator' -l new_key_1234 -k 256 -a WRAP_WITH_TRUSTED=false ENCRYPT=no WRAP=n SIGN=y
-
-![Capture](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/022b74a8-c7b5-421e-97d3-dd822b945646)
-
-# 2. Delete a key
-
-aeskeygen.py --delete --label my_key --token-label 'loadshared accelerator'  (verbose)
-
-aeskeygen.py -d -l my_key t 'loadshared accelerator' (short-argument)
-
-
-
-![image-2024-2-7_7-31-23](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/b39b56af-bf21-42d3-9aa9-a5fa7c6a3b8f)
-
-# 3. Finds Tokens
-
-aeskeygen.py --find-token --token-label 'loadshared accelerator' 
-
-aeskeygen.py -f -t 'loadshared accelerator' 
-
-
-![image-2024-2-6_23-1-14](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/5531c06a-982f-4a63-a848-baf529e4ddd4)
-
-
-# 4. Find Slots 
-
-aeskeygen.py --find-slots (verbose)
-
-aeskeygen.py -s  (short-argument)
-
-
-
-
-![image-2024-2-7_7-34-54](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/695152ad-3c17-42ae-9b71-b5246284960a)
-
-# 5. Copy keys
-
-Usage:
-aeskeygen.py -cp -t <token_label> -l <key_label_to_copy> -n <new_label> 
-
-
-![image-2024-2-28_17-43-55](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/915700be-dd11-459a-945f-7e34660a89bf)
-
-Here we see the copied key listed. 
-![image-2024-2-28_17-44-16](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/1580e471-44d2-4822-bd5d-991ffb64addd)
-
-
-# Advanced Encryption Standard (AES) Encryption/Decryption Script (aes-encryption.py)
-
-Features
-
-  1. Encrypt files with a given AES key that contains CKA_ENCRYPT & CKA_DECRYPT attributes. 
-  2. Decrypt files with the given AES key used for encryption. 
-
-# Usage: 
-![image-2024-2-14_18-10-30](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/11bb8230-ecfd-4627-bb7f-3db545ff6ec7)
-
-
-
-
-aes-encrypt.py -h
-
-
-# 1. Encrypting a txt file
-
-For our example, we will be encrypting a txt file named 'encrypt_me.txt' which we have filled with some text data. 
-
-aes-encryption.py -e -k new_key -t 'loadshared accelerator' -o /home/administrator/Desktop/decrypted.txt -i /home/administrator/Desktop/encrypted.txt 
-
-
-
-![image-2024-2-14_18-18-10](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/3cf500ff-cb80-4f73-a138-a2887b7c660e)
-
-
-Confirming file was encrypted:
-![image-2024-2-14_18-19-4](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/7d032d04-e712-4674-9b45-2976b5a682b1)
-
-
-# 2. Decrypting a txt file
-
-Ideally, the receiver would like to read the scrambled data. 
-
-To decrypt execute:
-
-aes-encryption.py" -d -k new_key -t 'loadshared accelerator' -i /home/administrator/Desktop/encrypted.txt -o /home/administrator/Desktop/decrypted.txt
-
-
- 
-![image-2024-2-14_18-22-45-1](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/d433ed76-8025-4bec-ab6f-23305c348f63)
-
-
-The output depicts the original file we encrypted, the file in an encrypted format, and the file we obtained after decryption. As observed in the syntax, the order of the arguments is irrelevant, all that's needed is the required arguments. 
-
-Limitations and other notes.
-
- 1. The current program logic only allows text files to be encrypted and decrypted. 
- 2. A different logic for encryption and decryption must be used for larger files or files with other formats such as jpg, png, and so on. 
- 3. This would entail using a 'Generator' that is consumed at the time of encryption or decryption. It would also need to break the data into chunks for encryption and the decryption portion reorganizes the chunks back to plaintext or the original format. 
- 4. An example of this shown in the python-pkcs11 API reference can be seen below:
-
-
-'''python
-buffer_size = 8192
-with open(file_in, 'rb') as input, open(file_out, 'wb') as 
-#A generator yielding chunks of the file 
-chunks = iter(lambda: input.read(buffer_size), '') 
-for chunk in key.encrypt(chunks,mechanism_param=iv, buffer_size=buffer_size):                             
-output.write(chunk)
-'''
-
-
-
- 2. Initialization Vectors or IVs must always be used for encryption/decryption.
-    - A challenging part of decryption was that I could not generate another random IV to decrypt the file.    
-    - You will always need to read the IV you set for the encrypted file to decrypt the file with the key. A different IV will result in a pkcs11.Exception error MechanismParamInvalid.
-    - If you use a 128-bit IV that will equal 16 bytes reading the IV from the encrypted file will look something like this:
- 
-      with open(input_file_path, "rb") as file:
-      
-       iv = file.read(16)
-
-From API ref:
-
-An initialization vector (IV) or starting variable (SV) is data that is used by several modes to randomize the encryption and hence to produce distinct ciphertexts even if the same plaintext is encrypted multiple times.
-
-An initialization vector has different security requirements than a key, so the IV usually does not need to be secret. However, in most cases, an initialization vector must be never reused under the same key. For CBC and CFB, reusing an IV leaks some information about the first block of plaintext, and about any common prefix shared by the two messages. For OFB and CTR, reusing an IV destroys security.
-
-In CBC mode, the IV must also be unpredictable at encryption time; in particular, the (previously) common practice of re-using the last ciphertext block of a message as the IV for the next message is insecure.
-
-We recommend using pkcs11.Session.generate_random() to create a quality IV.
-
-
-   3. By default AES_CBC_PAD is used for encryption. 
-
-
-# PKCS#11 Key Manager (keygen.py)# 
-
-Features:
-
-1. Generates AES & RSA Keys (plan to support more soon) 
-2. Deletes any key. 
-3. Copies any key.
-4. List all tokens
-5. Find a token based on the label.
-
-Usage:
-![image-2024-3-1_21-56-11](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/5d18cf85-5aa0-49f0-a1f9-6135bc3ac887)
-
-# 1 . Generating RSA, AES & EC keys. 
-
-keygen.py --generate --token-label 'loadshared accelerator' --algorithm RSA --key-size 4096 --label new_RSA_key
-
-keygen.py --generate --token-label 'loadshared accelerator' --algorithm AES --key-size 245 --label new_AES_key
-
-keygen.py --generate --token-label 'loadshared accelerator' --algorithm EC --curve secp256r1 --label new_EC_key
-
-
-
-
-AES:
-![image-2024-3-1_22-2-9](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/2322167c-9d91-42fa-aff3-f3f86cf8e3c3)
-
-
-RSA:
-
-![image-2024-3-1_22-6-49](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/1917e3fa-a9ce-48ec-ac8e-fc8cf9b02ac3)
-
-
-EC:
-
-![image-2024-3-1_23-46-16](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/1aa76427-12b5-4937-8719-ac645663994c)
-
-
-
-
-# 2. Copying keys 
-
-keygen.py --copy --label new_AES_key --new-label new_key_2
-
-
-![image-2024-3-1_22-17-3](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/a847cbb4-34a7-4e3c-a4af-c5987b08cadb)
-
-# 3. Deleting keys
-
-keygen.py --delete --label new_key_2 --token-label 'loadshared accelerator'
-
-![image-2024-3-1_22-27-18](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/881d461d-1b6b-4fb0-8db7-91537143071b)
-
-
-
-# 4. List all slots
-
-keygen.py --list-slots
-
-![image-2024-3-1_22-19-27](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/eef9225d-ff54-4c65-b79f-8e9a4ded5ab7)
-
-
+Generate
+- Copy
+- Delete
+- Export (public key)
+- Wrap
+- Unwrap
+- Encrypt
+- Decrypt
+- Sign 
+- Verify
 
