@@ -128,22 +128,22 @@ Wrapping
 Unwrapping
 - AES
    
-   python3 p11-tool.py --unwrap --wrapping-key <AES_KEY_LABEL> --key-to-wrap KEY_TO_WRAP_AES --algorithm AES --token-label 'loadshared accelerator' --input-path "C:\Wrapped_KEY_AES"
+   python3 p11-tool.py --unwrap --wrapping-key <AES_KEY_LABEL> --new-label <NEW_LABEL> --algorithm AES --token-label 'loadshared accelerator' --input-path "C:\Wrapped_KEY_AES"
 
 - DES3
 
-  python3 p11-tool.py --unwrap --wraping-key <DES3_KEY_LABEL> --key-to-wrap <KEY_TO_WRAP_LABEL> --algorithm AES --token-label 'loadshared accelerator' ---input-path "C:\Wrapped_KEY_DES3"
+  python3 p11-tool.py --unwrap --wrapping-key <DES3_KEY_LABEL> --new-label <NEW_LABEL> --algorithm AES --token-label 'loadshared accelerator' ---input-path "C:\Wrapped_KEY_DES3"
 - RSA
   
-  python3 p11-tool.py --unwrap --wrapping-key <RSA_KEY_LABEL> --key-to-wrap <KEY_TO_WRAP_LABEL> --algorithm RSA --token-label 'loadshared accelerator' --input-path "C:\Wrapped_KEY_RSA"
+  python3 p11-tool.py --unwrap --wrapping-key <RSA_KEY_LABEL> --new-label <NEW_LABEL> --algorithm RSA --token-label 'loadshared accelerator' --input-path "C:\Wrapped_KEY_RSA"
 
 - EC
   
-  python3 p11-tool.py --unwrap --wrapping-key <EC_KEY_LABEL> --algorithm EC --token-label 'loadshared accelerator' --input-path "C:\Wrapped_KEY_EC"
+  python3 p11-tool.py --unwrap --wrapping-key <EC_KEY_LABEL> --new-label <NEW_LABEL>--algorithm EC --token-label 'loadshared accelerator' --input-path "C:\Wrapped_KEY_EC"
 
 - DSA
 
-  python3 p11-tool.py --unwrap --wrapping-key <DSA_KEY_LABEL> --algorithm DSA --token-label 'loadshared accelerator' --input-path "C:\Wrapped_KEY_DSA"
+  python3 p11-tool.py --unwrap --wrapping-key <DSA_KEY_LABEL> --new-label <NEW_LABEL> --algorithm DSA --token-label 'loadshared accelerator' --input-path "C:\Wrapped_KEY_DSA"
 
 
 
