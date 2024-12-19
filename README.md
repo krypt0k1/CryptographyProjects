@@ -15,7 +15,6 @@ Non-repudiation, closely linked to authentication, prevents individuals from den
 The knowledge of cryptography is a linchpin of ineffective cybersecurity strategies. It forms an essential arsenal in the fight against an array of cyber threats that continuously exploit vulnerabilities in our digitally-dependent lives. A profound understanding of cryptographic principles empowers cybersecurity professionals to create robust defenses, secure communication channels, and establish digital trust. As our world becomes increasingly digitized and interconnected, the role of cryptography remains paramount in upholding the confidentiality, integrity, and authenticity of our digital transactions and interactions.
 
 
-
 # PKCS #11 Projects # 
 
 1 . p11-tool
@@ -38,5 +37,20 @@ The knowledge of cryptography is a linchpin of ineffective cybersecurity strateg
    - [import_x509](https://github.com/krypt0k1/CryptographyProjects/blob/main/import_x509.py) is a script to upload x.509 certificates onto an Entrust nShield Hardware Security Module with CKA_TRUSTED. It leverages the python-pkcs11 and asn1crypto modules to upload the certificate to the HSM with CKA_Trusted. It validates that the existing CKA_LABEL of the CKO_CERTIFICATE object does not exist in the HSM before calling C_CreateObject.
      ![image-2024-5-14_17-46-33](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/641fd8df-7e5f-4d5c-ae0e-3d532a581c0a)
 
+5 . codesign.py 
+   - [codsign](https://github.com/krypt0k1/CryptographyProjects/blob/main/codesign.py) is a simple Flask API application to use with the nShield Container Option pack. Allows containerized Python programs to access the HSM using the python-pkcs11 module via   cknfast.dll (Entrust PCKS#11 dll). Designed to sign files using a GET request (can be done with curl). 
+
+Requesting a signature
+
+curl -X POST -F "file=@C\Users\Administrator\sample.txt" http://localhost:5000/sign
+
+curl -X POST -F "file=@C:\\Users\\Administrator\\sample.txt" http://192.168.156.145:5000/sign
+
+Checking if API is online
+
+curl -X GET http://localhost:5000/health or IP
+
+
+![image-2024-11-5_18-18-27](https://github.com/user-attachments/assets/3d8e91e7-badf-4a0d-b06f-8e838d4fbecf)
 
 
