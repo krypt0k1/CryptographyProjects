@@ -38,7 +38,7 @@ The knowledge of cryptography is a linchpin of ineffective cybersecurity strateg
      ![image-2024-5-14_17-46-33](https://github.com/krypt0k1/CryptographyProjects/assets/111711434/641fd8df-7e5f-4d5c-ae0e-3d532a581c0a)
 
 5 . codesign.py 
-   - [codsign](https://github.com/krypt0k1/CryptographyProjects/blob/main/codesign.py) is a simple Flask API application to use with the nShield Container Option pack. Allows containerized Python programs to access the HSM using the python-pkcs11 module via   cknfast.dll (Entrust PCKS#11 dll). Designed to sign files using a GET request (can be done with curl). 
+   - [codsign](https://github.com/krypt0k1/CryptographyProjects/blob/main/codesign.py) is a simple Flask API application to use with the nShield Container Option pack. Allows containerized Python programs to access the Hardware Security Module (HSM) using the python-pkcs11 module via libcknfast.so/cknfast.dll (Entrust PCKS#11 DLL). Designed to sign files using a GET request. Creates a unique hash of a file and uses the Hardware Security Module (HSM) to sign the hash for integrity purposes. This ensures that the file has not been tampered with thus validating the integrity of its contents.   
 
 Requesting a signature
 
