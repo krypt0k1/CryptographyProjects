@@ -149,7 +149,7 @@ def sanitize_filename(filename):
 #   - PKCS11_MODULE_PATH: the path to the pkcs11 module
 #   - PKCS11_TOKEN_LABEL: the label of the token to use
 #   - PKCS11_PIN: the pin of the token to use
-#   - add %NFAS_HOME%\bin to your PATH environment variable.
+#   - add %NFAST_HOME%\bin to your PATH environment variable.
 # (Windows) Go to Settings > Environment Variables > System Variables > Path > Edit > New > %NFAST_HOME%\bin = C:\Program Files\nCipher\nfast\bin
 # (Linux) export PATH=$PATH:/opt/nfast/bin
 
@@ -167,7 +167,7 @@ lib = pkcs11.lib(os.environ['PKCS11_MODULE_PATH'])
 # The following environment variables are optional:
 # They can also be placed in the cknfastrc file in the nfast directory.
 
-#os.environ['CKNFAST_OVERRIDE_SECURITY_ASSURANCE'] = 'unwrap_mech;tokenkeys'
+os.environ['CKNFAST_OVERRIDE_SECURITY_ASSURANCE'] = 'all'
 #os.environ['CKNFAST_DEBUG'] = '10'
 #os.environ['CKNFAST_DEBUGFILE'] = '/opt/nfast/pkcs11_debug.log'
 
