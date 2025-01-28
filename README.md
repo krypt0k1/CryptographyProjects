@@ -54,7 +54,7 @@ curl -X GET http://localhost:5000/health or IP
 ![image-2024-11-5_18-18-27](https://github.com/user-attachments/assets/3d8e91e7-badf-4a0d-b06f-8e838d4fbecf)
 
 6 . HSMtool
-   - [HSMTool](https://github.com/krypt0k1/CryptographyProjects/blob/main/hsmtool.py) is a script that creates or uses an existing RSA Key Pair on a nShield HSM device. Wraps the RSA private key with an existing or newly generated AES wrapping key.  The file is exported in encrypted binary format. Generates a CSR using the RSA key stored in HSM via OpenSSL with nfkm engine. Support Windows and Linux OS.
+   - [HSMTool](https://github.com/krypt0k1/CryptographyProjects/tree/hsmtool) is a script that creates or uses an existing RSA Key Pair on a nShield HSM device. Wraps the RSA private key with an existing or newly generated AES wrapping key.  The file is exported in encrypted binary format. Generates a CSR using the RSA key stored in HSM via OpenSSL with nfkm engine. Support Windows and Linux OS.
 
 
 
