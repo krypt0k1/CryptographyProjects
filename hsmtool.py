@@ -19,31 +19,33 @@ def create_banner(text, width=150, border_char='*'):
     print(border)
 
 banner_text = """
-
 Description & Usage:
 
-Creates or uses an exsisting an RSA Key Pair on an nShield HSM device 
-Wraps the RSA private key with an exisiting or newly generated AES wrapping key. 
-File is exported in encrypted binary format.
-Generates a CSR using the RSA key stored in HSM via OpenSSL with nfkm engine.
+1. Creates or uses an existing RSA Key Pair on a nShield HSM device.
+2. Wraps the RSA private key with an existing or newly generated AES wrapping key. 
+3. The file is exported in encrypted binary format.
+4. Generates a CSR using the RSA key stored in HSM via OpenSSL with the nfkm engine.
 
 Instructions:
-  * Enter the RSA key label (e.g., mykey)
-  * Enter the AES wrapping key label (e.g., wrappingkey)
+  * Enter the RSA key label (e.g., rsa_key)
+  * Enter the AES wrapping key label (e.g., aes_wrapping_key)
     * Enter the token label (e.g., loadshared accelerator)
         * Enter the token pin   
             * Enter the key size (e.g., 2048 or 4096)
             * Do you want the public key to be a wrapping key? (y/n)
-            * Public key is generated or exisiting key is used
-            * Private key is generated or exisiting key is used
-            * AES Secret key is generated or exisiting key is used
+            * A Public key is generated or an existing key is used
+            * A Private key is generated or an existing key is used
+            * AES Secret key is generated or an existing key is used
             * RSA Private key is wrapped
             * Wrapped key material can be saved to file (custom path can be given or default is current working directory) 
             * CSR is generated with OpenSSL 
             * CSR is signed using the private key
-            * CSR is saved as file (custom path can be given or default is current working directory)
+            * CSR is saved as a file (custom path can be given or default is current working directory)
 
 Supported OS: Windows, Linux
+Dependencies: nCipher nShield HSM, nCipher nShield Software, OpenSSL (Security World install), Python 3.6+, 
+              python modules: python-pkcs11, os, re, sys, time, and subprocess
+Developed by: Armando Montero, nCipher Security
 """
 # Create the banner
 create_banner(banner_text)
@@ -243,7 +245,7 @@ private_key_template = {pkcs11.Attribute.TOKEN: True,
 # Open a session with the token
 with token.open(rw=True, user_pin=PKCS11_PIN) as session:
     try:
-        # Verify if key exists.
+        # Verify if the key exists.
         key = session.get_key(object_class=pkcs11.ObjectClass.PRIVATE_KEY, label=PKCS11_KEY_LABEL)
         
         print(f"Key pair with label '{PKCS11_KEY_LABEL}' already exists, wrapping private key portion instead...")
@@ -273,7 +275,7 @@ with token.open(rw=True, user_pin=PKCS11_PIN) as session:
         time.sleep(1)
     
     try:
-        # Verify if wrapping key exists.
+        # Verify if the wrapping key exists.
         wrapping_key = session.get_key(label=PKCS11_WRAPPING_KEY_LABEL)
         if wrapping_key:
             print(f"Wrapping key with label: '{wrapping_key.label}' already exists. \n")
