@@ -55,6 +55,8 @@ curl -X GET http://localhost:5000/health or IP
 
 6 . HSMtool
    - [HSMTool](https://github.com/krypt0k1/CryptographyProjects/tree/hsmtool) is a script that creates or uses an existing RSA Key Pair on a nShield HSM device. Wraps the RSA private key with an existing or newly generated AES wrapping key.  The file is exported in encrypted binary format. Generates a CSR using the RSA key stored in HSM via OpenSSL with nfkm engine. Support Windows and Linux OS.
+     
+![image](https://github.com/user-attachments/assets/f4b45a9a-68f4-48b2-aad5-c21bd68e54de)
 
 
 
